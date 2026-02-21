@@ -1,9 +1,15 @@
 'use client';
+import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { Plus } from 'lucide-react';
 
 export default function MaintenancePage() {
     const { user } = useAuthStore();
+
+    // Placeholder data - this will be replaced by backend API call
+    const [logs, setLogs] = useState([
+        { id: '321', vehicle: 'TATA', issue: 'Engine Issue', date: '20/02', cost: '10k', status: 'New' }
+    ]);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">
@@ -47,16 +53,23 @@ export default function MaintenancePage() {
                         </tr>
                     </thead>
                     <tbody className="text-sm">
-                        <tr className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
-                            <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">321</td>
-                            <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">TATA</td>
-                            <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">Engine Issue</td>
-                            <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">20/02</td>
-                            <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">10k</td>
-                            <td className="p-4 text-blue-400 font-medium underline underline-offset-4 pointer-events-none">New</td>
-                        </tr>
-                        {[...Array(12)].map((_, i) => (
-                            <tr key={i} className="border-b border-neutral-800/30 last:border-0">
+                        {logs.map((log) => (
+                            <tr key={log.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
+                                <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">{log.id}</td>
+                                <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">{log.vehicle}</td>
+                                <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">{log.issue}</td>
+                                <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">{log.date}</td>
+                                <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">{log.cost}</td>
+                                <td className="p-4 text-blue-400 font-medium underline underline-offset-4 pointer-events-none">{log.status}</td>
+                            </tr>
+                        ))}
+                        {logs.length === 0 && (
+                            <tr>
+                                <td colSpan="6" className="p-8 text-center text-neutral-500 font-medium">No service logs found.</td>
+                            </tr>
+                        )}
+                        {[...Array(Math.max(0, 10 - logs.length))].map((_, i) => (
+                            <tr key={`empty-${i}`} className="border-b border-neutral-800/30 last:border-0 hover:bg-neutral-800/10 transition-colors">
                                 <td colSpan="6" className="p-3 text-neutral-300 text-center leading-none select-none">•</td>
                             </tr>
                         ))}

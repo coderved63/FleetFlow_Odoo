@@ -7,6 +7,11 @@ export default function VehicleRegistryPage() {
     const { user } = useAuthStore();
     const [isFormOpen, setIsFormOpen] = useState(false);
 
+    // Placeholder data - this will be replaced by backend API call
+    const [vehicles, setVehicles] = useState([
+        { id: 1, plate: 'MH 00', model: '2017', type: 'Mini', capacity: '5 tonn', odometer: 79000, status: 'Idle' }
+    ]);
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">
             {/* Top Bar: Search and Filters */}
@@ -54,22 +59,30 @@ export default function VehicleRegistryPage() {
                         </tr>
                     </thead>
                     <tbody className="text-sm">
-                        <tr className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300">1</td>
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300">MH 00</td>
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300">2017</td>
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300">Mini</td>
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300">5 tonn</td>
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300">79000</td>
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300 underline decoration-amber-500 underline-offset-4">Idle</td>
-                            <td className="p-4 text-orange-400 font-medium">
-                                <button className="p-1 hover:bg-neutral-700 rounded transition-colors text-orange-500">
-                                    <X size={16} />
-                                </button>
-                            </td>
-                        </tr>
-                        {[2, 3, 4, 5, 6].map((i) => (
-                            <tr key={i} className="hover:bg-neutral-800/30 transition-colors">
+                        {vehicles.map((v, index) => (
+                            <tr key={v.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{index + 1}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.plate}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.model}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.type}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.capacity}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.odometer}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300 underline decoration-amber-500 underline-offset-4">{v.status}</td>
+                                <td className="p-4 text-orange-400 font-medium">
+                                    <button className="p-1 hover:bg-neutral-700 rounded transition-colors text-orange-500">
+                                        <X size={16} />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        {vehicles.length === 0 && (
+                            <tr>
+                                <td colSpan="8" className="p-8 text-center text-neutral-500 font-medium">No vehicles found.</td>
+                            </tr>
+                        )}
+                        {/* Placeholder empty dots for aesthetic padding */}
+                        {[...Array(Math.max(0, 5 - vehicles.length))].map((_, i) => (
+                            <tr key={`empty-${i}`} className="hover:bg-neutral-800/30 transition-colors">
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300 flex justify-center">•</td>
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">•</td>
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">•</td>

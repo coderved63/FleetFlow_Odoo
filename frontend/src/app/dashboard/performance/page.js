@@ -1,8 +1,16 @@
 'use client';
+import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 
 export default function PerformancePage() {
     const { user } = useAuthStore();
+
+    // Placeholder data - this will be replaced by backend API call
+    const [drivers, setDrivers] = useState([
+        { id: 1, name: 'John', license: '23223', expiry: '22/36', completionRate: '92%', safetyScore: '89%', complaints: 4 },
+        { id: 2, name: 'John', license: '23223', expiry: '22/36', completionRate: '92%', safetyScore: '89%', complaints: 4 },
+        { id: 3, name: 'John', license: '23223', expiry: '22/36', completionRate: '92%', safetyScore: '89%', complaints: 4 }
+    ]);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">

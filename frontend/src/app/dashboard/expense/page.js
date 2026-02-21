@@ -1,9 +1,15 @@
 'use client';
+import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { Plus } from 'lucide-react';
 
 export default function ExpensePage() {
     const { user } = useAuthStore();
+
+    // Placeholder data - this will be replaced by backend API call
+    const [expenses, setExpenses] = useState([
+        { id: 1, tripId: '321', driver: 'John', distance: '1000 km', fuelExpense: '19k', miscExpense: '3k', status: 'Done' }
+    ]);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">
@@ -47,16 +53,23 @@ export default function ExpensePage() {
                         </tr>
                     </thead>
                     <tbody className="text-sm">
-                        <tr className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300">321</td>
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300">John</td>
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300">1000 km</td>
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300">19k</td>
-                            <td className="p-4 border-r border-neutral-800 text-neutral-300">3k</td>
-                            <td className="p-4 text-neutral-300">Done</td>
-                        </tr>
-                        {[...Array(6)].map((_, i) => (
-                            <tr key={i} className="border-b border-neutral-800/30 last:border-0">
+                        {expenses.map((e) => (
+                            <tr key={e.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{e.tripId}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{e.driver}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{e.distance}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{e.fuelExpense}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{e.miscExpense}</td>
+                                <td className="p-4 text-neutral-300">{e.status}</td>
+                            </tr>
+                        ))}
+                        {expenses.length === 0 && (
+                            <tr>
+                                <td colSpan="6" className="p-8 text-center text-neutral-500 font-medium">No expenses recorded.</td>
+                            </tr>
+                        )}
+                        {[...Array(Math.max(0, 6 - expenses.length))].map((_, i) => (
+                            <tr key={`empty-${i}`} className="border-b border-neutral-800/30 last:border-0 hover:bg-neutral-800/10">
                                 <td colSpan="6" className="p-4 text-neutral-300 text-center leading-none select-none">•</td>
                             </tr>
                         ))}

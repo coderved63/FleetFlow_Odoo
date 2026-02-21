@@ -1,8 +1,14 @@
 'use client';
+import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 
 export default function TripDispatcherPage() {
     const { user } = useAuthStore();
+
+    // Placeholder data - this will be replaced by backend API call
+    const [trips, setTrips] = useState([
+        { id: 1, type: 'Trailer Truck', origin: 'Mumbai', destination: 'Pune', status: 'On way' }
+    ]);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">
@@ -35,15 +41,22 @@ export default function TripDispatcherPage() {
                         </tr>
                     </thead>
                     <tbody className="text-sm">
-                        <tr className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
-                            <td className="p-4 border-r border-neutral-800 text-red-500 font-semibold">1</td>
-                            <td className="p-4 border-r border-neutral-800 text-red-500 font-semibold">Trailer Truck</td>
-                            <td className="p-4 border-r border-neutral-800 text-red-500 font-semibold">Mumbai</td>
-                            <td className="p-4 border-r border-neutral-800 text-red-500 font-semibold">Pune</td>
-                            <td className="p-4 text-red-500 font-semibold underline underline-offset-4 decoration-red-500/50">On way</td>
-                        </tr>
-                        {[2, 3, 4, 5].map((i) => (
-                            <tr key={i} className="hover:bg-neutral-800/30 transition-colors border-b border-neutral-800/30 last:border-0">
+                        {trips.map((t) => (
+                            <tr key={t.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
+                                <td className="p-4 border-r border-neutral-800 text-red-500 font-semibold">{t.id}</td>
+                                <td className="p-4 border-r border-neutral-800 text-red-500 font-semibold">{t.type}</td>
+                                <td className="p-4 border-r border-neutral-800 text-red-500 font-semibold">{t.origin}</td>
+                                <td className="p-4 border-r border-neutral-800 text-red-500 font-semibold">{t.destination}</td>
+                                <td className="p-4 text-red-500 font-semibold underline underline-offset-4 decoration-red-500/50">{t.status}</td>
+                            </tr>
+                        ))}
+                        {trips.length === 0 && (
+                            <tr>
+                                <td colSpan="5" className="p-8 text-center text-neutral-500 font-medium">No trips active.</td>
+                            </tr>
+                        )}
+                        {[...Array(Math.max(0, 5 - trips.length))].map((_, i) => (
+                            <tr key={`empty-${i}`} className="hover:bg-neutral-800/30 transition-colors border-b border-neutral-800/30 last:border-0">
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">•</td>
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">•</td>
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">•</td>
