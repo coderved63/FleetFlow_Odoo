@@ -42,6 +42,11 @@ enum OnDutyStatus {
   AVAILABLE
 }
 
+enum LoggedStatus {
+  LOGGED
+  NOT_LOGGED
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -53,15 +58,15 @@ model User {
 }
 
 model Vehicle {
-  id              Int      @id @default(autoincrement())
+  id              Int         @id @default(autoincrement())
   name            String
-  licensePlate    String   @unique
-  maxLoadCapacity Float // in kg
-  type            String   @default("Truck")
-  odometer        Float    @default(0)
-  status          String   @default("Available") // Available, On Trip, In Shop, Out of Service
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  licensePlate    String      @unique
+  maxLoadCapacity Float       // in kg
+  type            VehicleType @default(TRUCK)
+  odometer        Float       @default(0)
+  status          String      @default("Available") // Available, On Trip, In Shop, Out of Service
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   trips           Trip[]
   maintenanceLogs MaintenanceLog[]
@@ -69,28 +74,41 @@ model Vehicle {
 }
 
 model Driver {
-  id            Int      @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   name          String
   licenseExpiry DateTime
-  status        String   @default("On Duty") // On Duty, Off Duty, Suspended
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status        String    @default("On Duty") // On Duty, Off Duty, Suspended
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  trips Trip[]
+  license         License?
+  trips           Trip[]
 }
 
 model Trip {
-  id            Int      @id @default(autoincrement())
-  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id])
-  vehicleId     Int
-  driver        Driver   @relation(fields: [driverId], references: [id])
-  driverId      Int
-  cargoWeight   Float // in kg
-  status        String   @default("Draft") // Draft, Dispatched, Completed, Cancelled
-  startOdometer Float?
-  endOdometer   Float?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                      Int       @id @default(autoincrement())
+  tripId                  String    @unique
+  vehicle                 Vehicle   @relation(fields: [vehicleId], references: [id])
+  vehicleId               Int
+  driver                  Driver    @relation(fields: [driverId], references: [id])
+  driverId                Int
+  cargoWeight             Float     // in kg
+  origin                  String
+  destination             String
+  estimatedDistance       Float     // in km
+  estimatedFuelPricePerKm Float
+  estimatedTripPrice      Float
+  status                  String       @default("Draft") // Draft, Dispatched, Completed, Cancelled
+  startDate               DateTime     @default(now())
+  endDate                 DateTime?
+  logged                  LoggedStatus @default(NOT_LOGGED)
+  startOdometer           Float?
+  endOdometer             Float?
+  actualDistance          Float?
+  actualFuelCost          Float?
+  actualTripPrice         Float?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 }
 
 model MaintenanceLog {
@@ -122,6 +140,8 @@ model License {
   vehicleType VehicleType
   expiryDate  DateTime
   status      DriverStatus
+  driver      Driver       @relation(fields: [driverId], references: [id])
+  driverId    Int          @unique
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
