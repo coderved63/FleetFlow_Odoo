@@ -28,8 +28,11 @@ export default function LoginPage() {
 
             login(data.token, data.user);
 
+            // Conditional Redirection based on Role
             if (data.user.role === 'ADMIN') {
                 router.push('/dashboard/admin');
+            } else if (data.user.role === 'FINANCIAL_ANALYST') {
+                router.push('/dashboard/analytics');
             } else {
                 router.push('/dashboard');
             }
