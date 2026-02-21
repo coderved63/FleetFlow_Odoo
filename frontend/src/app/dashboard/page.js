@@ -1,9 +1,18 @@
 'use client';
 import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function MainDashboard() {
     const { user } = useAuthStore();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (user?.role === 'FINANCIAL_ANALYST') {
+            router.push('/dashboard/analytics');
+        }
+    }, [user, router]);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">
