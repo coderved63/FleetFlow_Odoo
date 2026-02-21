@@ -149,32 +149,43 @@ const TiltContainer = ({ children, className = "" }) => {
   );
 };
 
+
+
 // --- 3D WATER BACKGROUND ---
 const WaterBackground = () => {
   const meshRef = useRef();
 
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.z = state.clock.getElapsedTime() * 0.05;
+      meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.05;
+      meshRef.current.rotation.z = state.clock.getElapsedTime() * 0.02;
     }
   });
 
   return (
-    <mesh ref={meshRef} position={[0, 0, -5]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[50, 50, 64, 64]} />
-      <MeshDistortMaterial
-        color="#081020"
-        speed={1.5}
-        distort={0.4}
-        radius={1}
-        metalness={0.8}
-        roughness={0.2}
-      />
-    </mesh>
+    <Float
+      speed={0.8}
+      rotationIntensity={0.2}
+      floatIntensity={0.5}
+      floatingRange={[-1, 1]}
+    >
+      <mesh ref={meshRef} position={[0, 0, -12]} scale={[16, 16, 16]}>
+        <sphereGeometry args={[1, 160, 160]} />
+        <MeshDistortMaterial
+          color="#0a1a3a"
+          speed={0.8}
+          distort={0.2}
+          radius={1}
+          metalness={1}
+          roughness={0}
+          opacity={0.3}
+          transparent
+        />
+      </mesh>
+    </Float>
   );
 };
 
-// --- HERO SCENE ---
 const HeroThreeScene = () => {
   return (
     <div className="absolute inset-0 z-0">

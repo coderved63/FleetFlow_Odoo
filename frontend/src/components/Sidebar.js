@@ -28,6 +28,12 @@ export default function Sidebar() {
     const navItems = user?.role === 'SAFETY_OFFICER'
         ? []
         : [{ name: 'Dashboard', icon: <LayoutDashboard size={20} />, href: '/dashboard' }];
+    const navItems = [];
+
+    // Add Dashboard only if NOT a Financial Analyst
+    if (user?.role !== 'FINANCIAL_ANALYST') {
+        navItems.push({ name: 'Dashboard', icon: <LayoutDashboard size={20} />, href: '/dashboard' });
+    }
 
     if (user?.role === 'ADMIN') {
         navItems.push(
@@ -41,20 +47,22 @@ export default function Sidebar() {
             { name: 'User Management', icon: <Users size={20} />, href: '/dashboard/admin' }
         );
     } else if (user?.role === 'FLEET_MANAGER') {
-        // Fleet Manager oversees vehicles and maintenance (Fleet Health & Assets) strictly
         navItems.push(
             { name: 'Vehicle Registry', icon: <Truck size={20} />, href: '/dashboard/vehicles' },
             { name: 'Maintenance', icon: <Wrench size={20} />, href: '/dashboard/maintenance' },
             { name: 'Safety & Compliance', icon: <ShieldAlert size={20} />, href: '/dashboard/safety' }
         );
     } else if (user?.role === 'DISPATCHER') {
-        // Dispatcher focuses on Trip Dispatching strictly
         navItems.push(
             { name: 'Trip Dispatcher', icon: <MapPin size={20} />, href: '/dashboard/dispatch' }
         );
     } else if (user?.role === 'SAFETY_OFFICER') {
         navItems.push(
             { name: 'Safety & Compliance', icon: <ShieldAlert size={20} />, href: '/dashboard/safety' }
+    } else if (user?.role === 'FINANCIAL_ANALYST') {
+        navItems.push(
+            { name: 'Trip & Expense', icon: <DollarSign size={20} />, href: '/dashboard/expense' },
+            { name: 'Analytics', icon: <Activity size={20} />, href: '/dashboard/analytics' }
         );
     }
 
