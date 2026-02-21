@@ -10,7 +10,8 @@ import {
     DollarSign,
     BarChart2,
     LogOut,
-    Users
+    Users,
+    Activity
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -30,6 +31,7 @@ export default function Sidebar() {
         { name: 'Maintenance', icon: <Wrench size={20} />, href: '/dashboard/maintenance' },
         { name: 'Trip & Expense', icon: <DollarSign size={20} />, href: '/dashboard/expense' },
         { name: 'Performance', icon: <BarChart2 size={20} />, href: '/dashboard/performance' },
+        { name: 'Analytics', icon: <Activity size={20} />, href: '/dashboard/analytics' },
         // Admin specific tabs
         ...(user?.role === 'ADMIN' ? [{ name: 'User Management', icon: <Users size={20} />, href: '/dashboard/admin' }] : [])
     ];

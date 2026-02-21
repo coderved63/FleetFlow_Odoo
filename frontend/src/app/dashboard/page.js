@@ -22,15 +22,17 @@ export default function MainDashboard() {
                 </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-3">
-                <button className="px-5 py-2 border border-blue-500 text-blue-400 hover:bg-blue-500/10 rounded-lg text-sm font-medium transition-colors">
-                    New Trip
-                </button>
-                <button className="px-5 py-2 border border-blue-500 text-blue-400 hover:bg-blue-500/10 rounded-lg text-sm font-medium transition-colors">
-                    New Vehicle
-                </button>
-            </div>
+            {/* Action Buttons - Hidden for Admin as they only manage users */}
+            {user?.role !== 'ADMIN' && (
+                <div className="flex justify-end gap-3">
+                    <button className="px-5 py-2 border border-blue-500 text-blue-400 hover:bg-blue-500/10 rounded-lg text-sm font-medium transition-colors">
+                        New Trip
+                    </button>
+                    <button className="px-5 py-2 border border-blue-500 text-blue-400 hover:bg-blue-500/10 rounded-lg text-sm font-medium transition-colors">
+                        New Vehicle
+                    </button>
+                </div>
+            )}
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
