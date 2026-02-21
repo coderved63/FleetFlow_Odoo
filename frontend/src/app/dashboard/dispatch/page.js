@@ -4,15 +4,14 @@ import { useAuthStore } from '@/store/authStore';
 import { MapPin, Truck, User as UserIcon, Calculator, ChevronRight, CheckCircle2, History } from 'lucide-react';
 
 const INDIAN_CITIES = [
-    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Ahmedabad', 'Chennai', 'Kolkata', 'Pune', 
-    'Jaipur', 'Surat', 'Lucknow', 'Kanpur', 'Nagpur', 'Indore', 'Thane', 'Bhopal', 
+    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Ahmedabad', 'Chennai', 'Kolkata', 'Pune',
+    'Jaipur', 'Surat', 'Lucknow', 'Kanpur', 'Nagpur', 'Indore', 'Thane', 'Bhopal',
     'Visakhapatnam', 'Patna', 'Vadodara', 'Ghaziabad'
 ];
 
-// Mock distance calculator (in a real app, this would call Google Maps API or similar)
+// Mock distance calculator
 const calculateDistance = (origin, destination) => {
     if (!origin || !destination) return 0;
-    // Simple hash-based distance for demo
     const dist = (origin.length + destination.length) * 15;
     return dist;
 };
@@ -44,6 +43,7 @@ export default function TripDispatcherPage() {
     // Completion State
     const [completingTrip, setCompletingTrip] = useState(null);
     const [endOdometer, setEndOdometer] = useState('');
+    const [revenue, setRevenue] = useState('');
 
     useEffect(() => {
         fetchTrips();
@@ -110,8 +110,7 @@ export default function TripDispatcherPage() {
     useEffect(() => {
         const distance = calculateDistance(formData.origin, formData.destination);
         const fuelCost = parseFloat(formData.fuelPricePerKm || 0);
-        
-        // Update manual distance default if it's empty
+
         if (!formData.manualDistance) {
             setCalculatedStats({
                 distance,
@@ -182,7 +181,8 @@ export default function TripDispatcherPage() {
                 },
                 body: JSON.stringify({
                     endOdometer,
-                    actualFuelCostPerKm: completingTrip.estimatedFuelPricePerKm // Using estimated for actual fuel cost per km for now
+                    actualFuelCostPerKm: completingTrip.estimatedFuelPricePerKm,
+                    revenue: parseFloat(revenue || 0)
                 })
             });
 
@@ -190,7 +190,8 @@ export default function TripDispatcherPage() {
                 fetchTrips();
                 setCompletingTrip(null);
                 setEndOdometer('');
-                alert('Trip Completed and Odometer Updated!');
+                setRevenue('');
+                alert('Trip Completed and Revenue Logged!');
             }
         } catch (err) {
             alert('Failed to complete trip');
@@ -201,7 +202,7 @@ export default function TripDispatcherPage() {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">
-            {/* Top Bar: Reference UI Search and Filters */}
+            {/* Top Bar */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-neutral-900 border border-neutral-800 p-4 rounded-xl shadow-sm">
                 <div className="w-full md:w-1/2">
                     <input
@@ -217,7 +218,7 @@ export default function TripDispatcherPage() {
                 </div>
             </div>
 
-            {/* Trip Status Table - Matching Reference UI */}
+            {/* Trip Status Table */}
             <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
                 <table className="w-full text-center border-collapse">
                     <thead>
@@ -245,7 +246,6 @@ export default function TripDispatcherPage() {
                                 <td colSpan="5" className="p-8 text-center text-neutral-500 font-medium">No trips active.</td>
                             </tr>
                         )}
-                        {/* Fill empty rows to match reference sketch style */}
                         {[...Array(Math.max(0, 5 - trips.length))].map((_, i) => (
                             <tr key={`empty-${i}`} className="border-b border-neutral-800/30 last:border-0">
                                 <td className="p-4 border-r border-neutral-800 text-neutral-600">•</td>
@@ -270,7 +270,7 @@ export default function TripDispatcherPage() {
                             </h3>
                             <button onClick={() => setCompletingTrip(null)} className="text-neutral-500 hover:text-white transition-colors">✕</button>
                         </div>
-                        
+
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-xs text-neutral-500 mb-1.5 uppercase tracking-wider">Starting Odometer</label>
@@ -280,11 +280,21 @@ export default function TripDispatcherPage() {
                             </div>
                             <div>
                                 <label className="block text-xs text-neutral-500 mb-1.5 uppercase tracking-wider">Current Odometer Reading</label>
-                                <input 
-                                    type="number" 
+                                <input
+                                    type="number"
                                     value={endOdometer}
                                     onChange={(e) => setEndOdometer(e.target.value)}
                                     placeholder="Enter current reading..."
+                                    className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-neutral-500 mb-1.5 uppercase tracking-wider">Total Revenue Earned (Rs.)</label>
+                                <input
+                                    type="number"
+                                    value={revenue}
+                                    onChange={(e) => setRevenue(e.target.value)}
+                                    placeholder="Enter total revenue..."
                                     className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
                                 />
                             </div>
@@ -302,7 +312,7 @@ export default function TripDispatcherPage() {
                             )}
                         </div>
 
-                        <button 
+                        <button
                             onClick={handleCompleteTrip}
                             className="w-full mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98]"
                         >
@@ -312,7 +322,7 @@ export default function TripDispatcherPage() {
                 </div>
             )}
 
-            {/* New Trip Form - Modified to match reference UI but with real logic */}
+            {/* New Trip Form */}
             <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8 shadow-sm">
                 <div className="mb-8 flex items-center justify-between">
                     <span className="px-4 py-1.5 border border-emerald-500/50 text-emerald-400 rounded-lg text-sm font-bold bg-emerald-500/5">
@@ -327,23 +337,22 @@ export default function TripDispatcherPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                    {/* Cargo Weight First to Filter Vehicles */}
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
                         <label className="text-neutral-400 text-sm whitespace-nowrap w-40">Cargo Weight (Kg):</label>
-                        <input 
-                            type="number" 
+                        <input
+                            type="number"
                             value={formData.cargoWeight}
-                            onChange={(e) => setFormData({...formData, cargoWeight: e.target.value})}
-                            className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-colors" 
+                            onChange={(e) => setFormData({ ...formData, cargoWeight: e.target.value })}
+                            className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                             placeholder="Enter load in kg..."
                         />
                     </div>
 
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
                         <label className="text-neutral-400 text-sm whitespace-nowrap w-40">Select Vehicle:</label>
-                        <select 
+                        <select
                             value={formData.vehicleId}
-                            onChange={(e) => setFormData({...formData, vehicleId: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, vehicleId: e.target.value })}
                             disabled={!formData.cargoWeight}
                             className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all disabled:opacity-50"
                         >
@@ -356,9 +365,9 @@ export default function TripDispatcherPage() {
 
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
                         <label className="text-neutral-400 text-sm whitespace-nowrap w-40">Select Driver:</label>
-                        <select 
+                        <select
                             value={formData.driverId}
-                            onChange={(e) => setFormData({...formData, driverId: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, driverId: e.target.value })}
                             disabled={!formData.vehicleId}
                             className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-all disabled:opacity-50"
                         >
@@ -371,9 +380,9 @@ export default function TripDispatcherPage() {
 
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
                         <label className="text-neutral-400 text-sm whitespace-nowrap w-40">Origin Address:</label>
-                        <select 
+                        <select
                             value={formData.origin}
-                            onChange={(e) => setFormData({...formData, origin: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
                             className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                         >
                             {INDIAN_CITIES.map(c => <option key={`origin-${c}`} value={c}>{c}</option>)}
@@ -382,9 +391,9 @@ export default function TripDispatcherPage() {
 
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
                         <label className="text-neutral-400 text-sm whitespace-nowrap w-40">Destination:</label>
-                        <select 
+                        <select
                             value={formData.destination}
-                            onChange={(e) => setFormData({...formData, destination: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                             className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                         >
                             {INDIAN_CITIES.map(c => <option key={`dest-${c}`} value={c}>{c}</option>)}
@@ -393,31 +402,31 @@ export default function TripDispatcherPage() {
 
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
                         <label className="text-neutral-400 text-sm whitespace-nowrap w-40">Manual Distance (Km):</label>
-                        <input 
-                            type="number" 
+                        <input
+                            type="number"
                             step="0.1"
                             value={formData.manualDistance}
-                            onChange={(e) => setFormData({...formData, manualDistance: e.target.value})}
-                            className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-colors border-dashed border-blue-500/30" 
+                            onChange={(e) => setFormData({ ...formData, manualDistance: e.target.value })}
+                            className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-colors border-dashed border-blue-500/30"
                             placeholder={`Auto: ${calculatedStats.distance} km`}
                         />
                     </div>
 
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
                         <label className="text-neutral-400 text-sm whitespace-nowrap w-40">Est. Fuel Cost (₹/km):</label>
-                        <input 
-                            type="number" 
+                        <input
+                            type="number"
                             step="0.01"
                             value={formData.fuelPricePerKm}
-                            onChange={(e) => setFormData({...formData, fuelPricePerKm: e.target.value})}
-                            className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-colors" 
+                            onChange={(e) => setFormData({ ...formData, fuelPricePerKm: e.target.value })}
+                            className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                             placeholder="e.g. 15.50"
                         />
                     </div>
                 </div>
 
                 <div className="mt-10 flex justify-start border-t border-neutral-800 pt-8">
-                    <button 
+                    <button
                         onClick={handleDispatch}
                         className="group flex items-center gap-3 px-8 py-3.5 border border-emerald-500 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl text-sm font-bold transition-all active:scale-[0.98] shadow-lg shadow-emerald-500/10"
                     >
