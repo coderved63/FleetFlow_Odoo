@@ -1,6 +1,7 @@
+<!--
 # 🚛 FleetFlow: Production-Grade Logistics & Fleet Management System
 
-![FleetFlow Banner Header Placeholder] <!-- Image 1 Placeholder: Add a nice generic banner image here -->
+![FleetFlow Banner Header Placeholder] 
 
 **FleetFlow** is a comprehensive, RBAC-driven fleet management and logistics platform engineered to solve real-world operational bottlenecks. It bridges the gap between physical asset management, human resources, and financial analytics by providing dedicated, securely isolated workflows for different operational roles.
 
@@ -167,3 +168,4 @@ While the core RBAC and database schemas are built, the following features are i
 
 ---
 *Built with precision to ensure real-world vehicles don't break down mid-trip.*
+-->
