@@ -66,16 +66,16 @@ router.get('/filter-drivers', authenticate, authorize(TripManagers), async (req,
 // Create a new trip (dispatch)
 router.post('/', authenticate, authorize(TripManagers), async (req, res) => {
     try {
-        const { 
-            vehicleId, 
-            driverId, 
-            cargoWeight, 
-            origin, 
-            destination, 
-            estimatedDistance, 
-            estimatedFuelPricePerKm, 
+        const {
+            vehicleId,
+            driverId,
+            cargoWeight,
+            origin,
+            destination,
+            estimatedDistance,
+            estimatedFuelPricePerKm,
             estimatedTripPrice,
-            status 
+            status
         } = req.body;
 
         const vehicle = await prisma.vehicle.findUnique({ where: { id: parseInt(vehicleId) } });
@@ -119,9 +119,9 @@ router.post('/', authenticate, authorize(TripManagers), async (req, res) => {
 router.patch('/:id/complete', authenticate, authorize(TripManagers), async (req, res) => {
     try {
         const { id } = req.params;
-        const { endOdometer, actualFuelCostPerKm } = req.body;
+        const { endOdometer, actualFuelCostPerKm, revenue } = req.body;
 
-        const trip = await prisma.trip.findUnique({ 
+        const trip = await prisma.trip.findUnique({
             where: { id: parseInt(id) },
             include: { vehicle: true }
         });
@@ -131,9 +131,9 @@ router.patch('/:id/complete', authenticate, authorize(TripManagers), async (req,
         const startOdometer = trip.startOdometer || trip.vehicle.odometer;
         const actualDistance = parseFloat(endOdometer) - startOdometer;
         const actualFuelCost = actualDistance * parseFloat(actualFuelCostPerKm);
-        
-        // Simple mock for actual trip price (can be adjusted)
-        const actualTripPrice = actualFuelCost * 1.5; 
+
+        // Simple calculation for actual trip price
+        const actualTripPrice = actualFuelCost * 1.5;
 
         const updatedTrip = await prisma.trip.update({
             where: { id: parseInt(id) },
@@ -143,7 +143,8 @@ router.patch('/:id/complete', authenticate, authorize(TripManagers), async (req,
                 endOdometer: parseFloat(endOdometer),
                 actualDistance,
                 actualFuelCost,
-                actualTripPrice
+                actualTripPrice,
+                revenue: parseFloat(revenue || 0)
             }
         });
 

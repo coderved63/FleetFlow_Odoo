@@ -108,6 +108,7 @@ model Trip {
   actualDistance          Float?
   actualFuelCost          Float?
   actualTripPrice         Float?
+  revenue                 Float        @default(0)
   createdAt               DateTime     @default(now())
   updatedAt               DateTime     @updatedAt
 }
