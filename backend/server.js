@@ -15,6 +15,8 @@ const driverRoutes = require('./routes/drivers');
 const tripRoutes = require('./routes/trips');
 const maintenanceRoutes = require('./routes/maintenance');
 const safetyRoutes = require('./routes/safety');
+const expenseRoutes = require('./routes/expenses');
+const analyticsRoutes = require('./routes/analytics');
 
 // Middleware
 app.use(cors());
@@ -28,6 +30,8 @@ app.use('/api/drivers', driverRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/safety', safetyRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'success', message: 'FleetFlow Backend is running perfectly!' });

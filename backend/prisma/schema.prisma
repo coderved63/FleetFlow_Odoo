@@ -80,7 +80,8 @@ model Vehicle {
   name            String
   licensePlate    String      @unique
   maxLoadCapacity Float       // in kg
-  type            VehicleType @default(TRUCK)
+  acquisitionCost Float       @default(0) // Need this for ROI formula
+  type            String      @default("Truck")
   odometer        Float       @default(0)
   status          String      @default("Available") // Available, On Trip, In Shop, Out of Service
   createdAt       DateTime    @default(now())
@@ -127,12 +128,12 @@ model Trip {
   tripId                  String    @unique
   vehicle                 Vehicle   @relation(fields: [vehicleId], references: [id])
   vehicleId               Int
-  driver                  Driver    @relation(fields: [driverId], references: [id])
+  driver                  Driver       @relation(fields: [driverId], references: [id])
   driverId                Int
-  cargoWeight             Float     // in kg
+  cargoWeight             Float        // in kg
   origin                  String
   destination             String
-  estimatedDistance       Float     // in km
+  estimatedDistance       Float        // in km
   estimatedFuelPricePerKm Float
   estimatedTripPrice      Float
   status                  String       @default("Draft") // Draft, Dispatched, Completed, Cancelled
@@ -144,8 +145,9 @@ model Trip {
   actualDistance          Float?
   actualFuelCost          Float?
   actualTripPrice         Float?
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
+  revenue                 Float        @default(0)
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
 }
 
 model MaintenanceLog {
@@ -183,4 +185,15 @@ model License {
   driverId    Int          @unique
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model Expense {
+  id           Int      @id @default(autoincrement())
+  tripId       String   @unique
+  driver       String
+  distance     Float
+  fuelCost     Float
+  miscExpense  Float    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

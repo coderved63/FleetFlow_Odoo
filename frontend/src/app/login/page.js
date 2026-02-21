@@ -28,14 +28,14 @@ export default function LoginPage() {
 
             login(data.token, data.user);
 
-            const roleRedirects = {
-                ADMIN:            '/dashboard/admin',
-                SAFETY_OFFICER:   '/dashboard/safety',
-                DISPATCHER:       '/dashboard/dispatch',
-                FLEET_MANAGER:    '/dashboard/vehicles',
-                FINANCIAL_ANALYST:'/dashboard/expense',
-            };
-            router.push(roleRedirects[data.user.role] ?? '/dashboard');
+            // Conditional Redirection based on Role
+            if (data.user.role === 'ADMIN') {
+                router.push('/dashboard/admin');
+            } else if (data.user.role === 'FINANCIAL_ANALYST') {
+                router.push('/dashboard/analytics');
+            } else {
+                router.push('/dashboard');
+            }
         } catch (err) {
             setError(err.message);
         } finally {
