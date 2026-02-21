@@ -22,33 +22,45 @@ export default function MainDashboard() {
                 </div>
             </div>
 
-            {/* Action Buttons - Hidden for Admin as they only manage users */}
-            {user?.role !== 'ADMIN' && (
-                <div className="flex justify-end gap-3">
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3">
+                {(user?.role === 'ADMIN' || user?.role === 'DISPATCHER') && (
                     <button className="px-5 py-2 border border-blue-500 text-blue-400 hover:bg-blue-500/10 rounded-lg text-sm font-medium transition-colors">
                         New Trip
                     </button>
+                )}
+                {(user?.role === 'ADMIN' || user?.role === 'FLEET_MANAGER') && (
                     <button className="px-5 py-2 border border-blue-500 text-blue-400 hover:bg-blue-500/10 rounded-lg text-sm font-medium transition-colors">
                         New Vehicle
                     </button>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
-                    <h3 className="text-emerald-400 text-xl font-medium mb-4">Active Fleet</h3>
-                    <p className="text-emerald-400 text-5xl font-semibold">220</p>
+                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
+                    <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Active Fleet (On Trip)</h3>
+                    <p className="text-white text-4xl font-semibold">145</p>
                 </div>
-
-                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
-                    <h3 className="text-emerald-400 text-xl font-medium mb-4">Maintenance Alert</h3>
-                    <p className="text-emerald-400 text-5xl font-semibold">180</p>
+                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
+                    <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Vehicles In Shop</h3>
+                    <p className="text-orange-400 text-4xl font-semibold">12</p>
                 </div>
-
-                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
-                    <h3 className="text-emerald-400 text-xl font-medium mb-4">Pending Cargo</h3>
-                    <p className="text-emerald-400 text-5xl font-semibold">20</p>
+                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
+                    <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Fleet Utilization Rate</h3>
+                    <p className="text-emerald-400 text-4xl font-semibold">88%</p>
+                </div>
+                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
+                    <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Maintenance Alerts</h3>
+                    <p className="text-red-400 text-4xl font-semibold">5</p>
+                </div>
+                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
+                    <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Pending Cargo</h3>
+                    <p className="text-blue-400 text-4xl font-semibold">$450k / 20 tons</p>
+                </div>
+                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
+                    <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Safety Alerts</h3>
+                    <p className="text-yellow-400 text-4xl font-semibold">2 Flags</p>
                 </div>
             </div>
 

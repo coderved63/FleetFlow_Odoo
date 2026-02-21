@@ -10,6 +10,10 @@ const app = express();
 // Route imports
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const vehicleRoutes = require('./routes/vehicles');
+const driverRoutes = require('./routes/drivers');
+const tripRoutes = require('./routes/trips');
+const maintenanceRoutes = require('./routes/maintenance');
 
 // Middleware
 app.use(cors());
@@ -18,6 +22,10 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin/users', adminRoutes);
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/drivers', driverRoutes);
+app.use('/api/trips', tripRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'success', message: 'FleetFlow Backend is running perfectly!' });

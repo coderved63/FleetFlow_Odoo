@@ -57,6 +57,7 @@ model Vehicle {
   name            String
   licensePlate    String   @unique
   maxLoadCapacity Float // in kg
+  type            String   @default("Truck")
   odometer        Float    @default(0)
   status          String   @default("Available") // Available, On Trip, In Shop, Out of Service
   createdAt       DateTime @default(now())

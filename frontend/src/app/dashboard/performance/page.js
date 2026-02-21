@@ -1,16 +1,80 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Search, ShieldAlert, CheckCircle2, X, UserPlus, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 export default function PerformancePage() {
-    const { user } = useAuthStore();
+    const { user, token } = useAuthStore();
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [drivers, setDrivers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [message, setMessage] = useState('');
 
-    // Placeholder data - this will be replaced by backend API call
-    const [drivers, setDrivers] = useState([
-        { id: 1, name: 'John', license: '23223', expiry: '22/36', completionRate: '92%', safetyScore: '89%', complaints: 4 },
-        { id: 2, name: 'John', license: '23223', expiry: '22/36', completionRate: '92%', safetyScore: '89%', complaints: 4 },
-        { id: 3, name: 'John', license: '23223', expiry: '22/36', completionRate: '92%', safetyScore: '89%', complaints: 4 }
-    ]);
+    // Changed formData to match backend expectations for drivers
+    const [formData, setFormData] = useState({
+        name: '',
+        license: '',
+        expiry: ''
+    });
+
+    const fetchDrivers = async () => {
+        try {
+            const res = await fetch('http://localhost:5000/api/drivers', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setDrivers(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch drivers', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMessage('');
+
+        try {
+            const res = await fetch('http://localhost:5000/api/drivers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: formData.name,
+                    // The backend expects licenseExpiry as a date.
+                    licenseExpiry: formData.expiry,
+                    status: 'On Duty'
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setMessage('Driver registered successfully!');
+                setFormData({ name: '', license: '', expiry: '' });
+                fetchDrivers();
+                setTimeout(() => {
+                    setIsFormOpen(false);
+                    setMessage('');
+                }, 2000);
+            } else {
+                setMessage(data.error || 'Failed to register driver');
+            }
+        } catch (err) {
+            setMessage('Network error occurred.');
+        }
+    };
+
+    useEffect(() => {
+        if (token) {
+            fetchDrivers();
+        }
+    }, [token]);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">
@@ -44,19 +108,43 @@ export default function PerformancePage() {
                         </tr>
                     </thead>
                     <tbody className="text-sm">
-                        {[1, 2, 3].map((i) => (
-                            <tr key={i} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">John</td>
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">23223</td>
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">22/36</td>
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">92%</td>
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">89%</td>
-                                <td className="p-4 text-neutral-300">4</td>
+                        {drivers.map((d, index) => {
+                            // Backend `Driver` model has id, name, licenseExpiry, status.
+                            // The `License` relation might not be fully fetched without an `include` in backend,
+                            // but for now we map what we have. We'll use dummy data for completionRate/safetyScore 
+                            // until Analytics phase.
+                            return (
+                                <tr key={d.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
+                                    <td className="p-4 border-r border-neutral-800 text-neutral-300">{d.name}</td>
+                                    <td className="p-4 border-r border-neutral-800 text-neutral-300">N/A</td>
+                                    <td className="p-4 border-r border-neutral-800 text-neutral-300">
+                                        {d.licenseExpiry ? new Date(d.licenseExpiry).toLocaleDateString() : 'N/A'}
+                                    </td>
+                                    <td className="p-4 border-r border-neutral-800 text-neutral-300 text-emerald-400">100% (New)</td>
+                                    <td className="p-4 border-r border-neutral-800 text-neutral-300 text-blue-400">100/100</td>
+                                    <td className="p-4 text-neutral-300 underline decoration-amber-500 underline-offset-4">{d.status}</td>
+                                </tr>
+                            );
+                        })}
+                        {drivers.length === 0 && !isLoading && (
+                            <tr>
+                                <td colSpan="6" className="p-8 text-center text-neutral-500 font-medium">No driver profiles found. Click 'Onboard Driver' to hire.</td>
                             </tr>
-                        ))}
-                        {[...Array(15)].map((_, i) => (
-                            <tr key={i + 3} className="border-b border-neutral-800/20 last:border-0 font-bold">
-                                <td colSpan="6" className="p-1 px-4 text-neutral-300 text-left select-none">•</td>
+                        )}
+                        {isLoading && (
+                            <tr>
+                                <td colSpan="6" className="p-8 text-center text-neutral-500 font-medium">Loading drivers...</td>
+                            </tr>
+                        )}
+                        {/* Placeholder empty dots for aesthetic padding */}
+                        {[...Array(Math.max(0, 5 - drivers.length))].map((_, i) => (
+                            <tr key={`empty-${i}`} className="hover:bg-neutral-800/30 transition-colors">
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300 flex justify-center">•</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">•</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">•</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">•</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">•</td>
+                                <td className="p-4 text-neutral-300">•</td>
                             </tr>
                         ))}
                     </tbody>

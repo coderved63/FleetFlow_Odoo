@@ -26,15 +26,25 @@ export default function Sidebar() {
 
     const navItems = [
         { name: 'Dashboard', icon: <LayoutDashboard size={20} />, href: '/dashboard' },
-        { name: 'Vehicle Registry', icon: <Truck size={20} />, href: '/dashboard/vehicles' },
-        { name: 'Trip Dispatcher', icon: <MapPin size={20} />, href: '/dashboard/dispatch' },
-        { name: 'Maintenance', icon: <Wrench size={20} />, href: '/dashboard/maintenance' },
-        { name: 'Trip & Expense', icon: <DollarSign size={20} />, href: '/dashboard/expense' },
-        { name: 'Performance', icon: <BarChart2 size={20} />, href: '/dashboard/performance' },
-        { name: 'Analytics', icon: <Activity size={20} />, href: '/dashboard/analytics' },
-        // Admin specific tabs
-        ...(user?.role === 'ADMIN' ? [{ name: 'User Management', icon: <Users size={20} />, href: '/dashboard/admin' }] : [])
     ];
+
+    if (user?.role === 'ADMIN') {
+        navItems.push(
+            { name: 'Vehicle Registry', icon: <Truck size={20} />, href: '/dashboard/vehicles' },
+            { name: 'Trip Dispatcher', icon: <MapPin size={20} />, href: '/dashboard/dispatch' },
+            { name: 'Maintenance', icon: <Wrench size={20} />, href: '/dashboard/maintenance' },
+            { name: 'Trip & Expense', icon: <DollarSign size={20} />, href: '/dashboard/expense' },
+            { name: 'Performance', icon: <BarChart2 size={20} />, href: '/dashboard/performance' },
+            { name: 'Analytics', icon: <Activity size={20} />, href: '/dashboard/analytics' },
+            { name: 'User Management', icon: <Users size={20} />, href: '/dashboard/admin' }
+        );
+    } else if (user?.role === 'FLEET_MANAGER') {
+        // Fleet Manager oversees vehicles and maintenance (Fleet Health & Assets) strictly
+        navItems.push(
+            { name: 'Vehicle Registry', icon: <Truck size={20} />, href: '/dashboard/vehicles' },
+            { name: 'Maintenance', icon: <Wrench size={20} />, href: '/dashboard/maintenance' }
+        );
+    }
 
     return (
         <div className="w-64 bg-neutral-900 border-r border-neutral-800 text-white flex flex-col h-screen">

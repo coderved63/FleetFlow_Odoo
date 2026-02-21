@@ -1,16 +1,87 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Plus, X } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 export default function VehicleRegistryPage() {
-    const { user } = useAuthStore();
+    const { user, token } = useAuthStore();
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [vehicles, setVehicles] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [message, setMessage] = useState('');
 
-    // Placeholder data - this will be replaced by backend API call
-    const [vehicles, setVehicles] = useState([
-        { id: 1, plate: 'MH 00', model: '2017', type: 'Mini', capacity: '5 tonn', odometer: 79000, status: 'Idle' }
-    ]);
+    const [formData, setFormData] = useState({
+        plate: '',
+        model: '',
+        type: '',
+        capacity: '',
+        odometer: ''
+    });
+
+    const fetchVehicles = async () => {
+        try {
+            const res = await fetch('http://localhost:5000/api/vehicles', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setVehicles(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch vehicles', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // React core hooks must be imported
+    // We already have useState, need to add useEffect in the import at top
+    // For now we assume it's imported (will fix import next)
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMessage('');
+
+        try {
+            const res = await fetch('http://localhost:5000/api/vehicles', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    licensePlate: formData.plate,
+                    name: formData.model,
+                    maxLoadCapacity: formData.capacity,
+                    type: formData.type,
+                    odometer: formData.odometer,
+                    status: 'Available' // Default status
+                }) // type added here
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setMessage('Vehicle registered successfully!');
+                setFormData({ plate: '', model: '', type: '', capacity: '', odometer: '' });
+                fetchVehicles();
+                setTimeout(() => {
+                    setIsFormOpen(false);
+                    setMessage('');
+                }, 2000);
+            } else {
+                setMessage(data.error || 'Failed to register vehicle');
+            }
+        } catch (err) {
+            setMessage('Network error occurred.');
+        }
+    };
+
+    useEffect(() => {
+        if (token) {
+            fetchVehicles();
+        }
+    }, [token]);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">
@@ -62,10 +133,10 @@ export default function VehicleRegistryPage() {
                         {vehicles.map((v, index) => (
                             <tr key={v.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">{index + 1}</td>
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.plate}</td>
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.model}</td>
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.type}</td>
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.capacity}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.licensePlate}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.name}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.type || '-'}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.maxLoadCapacity} kg</td>
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.odometer}</td>
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300 underline decoration-amber-500 underline-offset-4">{v.status}</td>
                                 <td className="p-4 text-orange-400 font-medium">
@@ -75,9 +146,14 @@ export default function VehicleRegistryPage() {
                                 </td>
                             </tr>
                         ))}
-                        {vehicles.length === 0 && (
+                        {vehicles.length === 0 && !isLoading && (
                             <tr>
-                                <td colSpan="8" className="p-8 text-center text-neutral-500 font-medium">No vehicles found.</td>
+                                <td colSpan="8" className="p-8 text-center text-neutral-500 font-medium">No vehicles found. Click 'New Vehicle' to add one.</td>
+                            </tr>
+                        )}
+                        {isLoading && (
+                            <tr>
+                                <td colSpan="8" className="p-8 text-center text-neutral-500 font-medium">Loading vehicles...</td>
                             </tr>
                         )}
                         {/* Placeholder empty dots for aesthetic padding */}
@@ -107,27 +183,37 @@ export default function VehicleRegistryPage() {
                                 <X size={20} />
                             </button>
                         </div>
-                        <form className="p-8 space-y-6">
+                        <form onSubmit={handleSubmit} className="p-8 pt-4 space-y-6">
+                            {message && (
+                                <div className={`p-3 rounded-lg text-sm ${message.includes('success') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                                    {message}
+                                </div>
+                            )}
                             <div className="space-y-4">
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                                     <label className="text-neutral-300 text-sm whitespace-nowrap w-32">License Plate:</label>
-                                    <input type="text" className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                                    <input required type="text" value={formData.plate} onChange={e => setFormData({ ...formData, plate: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. MH-01-AB-1234" />
                                 </div>
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Max Payload:</label>
-                                    <input type="text" className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Model Name:</label>
+                                    <input required type="text" value={formData.model} onChange={e => setFormData({ ...formData, model: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. Tata Ace Gold" />
+                                </div>
+                                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Max Payload (kg):</label>
+                                    <input required type="number" value={formData.capacity} onChange={e => setFormData({ ...formData, capacity: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. 750" />
                                 </div>
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                                     <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Initial Odometer:</label>
-                                    <input type="text" className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                                    <input required type="number" value={formData.odometer} onChange={e => setFormData({ ...formData, odometer: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. 15000" />
                                 </div>
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Type:</label>
-                                    <input type="text" className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" />
-                                </div>
-                                <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Model:</label>
-                                    <input type="text" className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" />
+                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Vehicle Type:</label>
+                                    <select required value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 text-white">
+                                        <option value="" disabled>Select vehicle type...</option>
+                                        <option value="Truck">Truck</option>
+                                        <option value="Van">Van</option>
+                                        <option value="Bike">Bike</option>
+                                    </select>
                                 </div>
                             </div>
 
