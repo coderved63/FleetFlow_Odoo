@@ -25,7 +25,7 @@ router.get('/', authenticate, authorize(MaintenanceRoles), async (req, res) => {
 // Create a new maintenance log
 router.post('/', authenticate, authorize(MaintenanceRoles), async (req, res) => {
     try {
-        const { vehicleId, serviceType, cost, description, status } = req.body;
+        const { vehicleId, serviceType, cost, description, status, date } = req.body;
 
         // Ensure vehicle exists
         const vehicle = await prisma.vehicle.findUnique({ where: { id: parseInt(vehicleId) } });
@@ -39,7 +39,7 @@ router.post('/', authenticate, authorize(MaintenanceRoles), async (req, res) => 
                 serviceType,
                 cost: parsedCost,
                 description: description || '',
-                date: new Date(),
+                date: date ? new Date(date) : new Date(),
                 status: status || 'Pending'
             }
         });

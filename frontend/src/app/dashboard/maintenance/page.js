@@ -15,7 +15,8 @@ export default function MaintenancePage() {
         vehicleId: '',
         serviceType: '',
         cost: '',
-        description: ''
+        description: '',
+        date: new Date().toISOString().split('T')[0]
     });
 
     const fetchLogs = async () => {
@@ -73,6 +74,7 @@ export default function MaintenancePage() {
                     serviceType: formData.serviceType,
                     cost: formData.cost,
                     description: formData.description,
+                    date: formData.date,
                     status: 'In Progress'
                 })
             });
@@ -81,7 +83,7 @@ export default function MaintenancePage() {
 
             if (res.ok) {
                 setMessage('Service logged successfully! Vehicle moved to IN SHOP.');
-                setFormData({ vehicleId: '', serviceType: '', cost: '', description: '' });
+                setFormData({ vehicleId: '', serviceType: '', cost: '', description: '', date: new Date().toISOString().split('T')[0] });
                 fetchLogs(); // Refresh the list
                 setTimeout(() => {
                     setIsFormOpen(false);
@@ -176,7 +178,7 @@ export default function MaintenancePage() {
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-neutral-900 border border-neutral-800 rounded-3xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200">
                         <div className="p-6 border-b border-neutral-800 flex justify-between items-center">
-                            <h2 className="text-xl font-semibold text-white">Log Maintenance Record</h2>
+                            <h2 className="text-xl font-semibold text-white">New Service</h2>
                             <button onClick={() => setIsFormOpen(false)} className="text-neutral-500 hover:text-white transition-colors">
                                 <X size={20} />
                             </button>
@@ -189,7 +191,7 @@ export default function MaintenancePage() {
                             )}
                             <div className="space-y-4">
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Select Vehicle:</label>
+                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Vehicle Name:</label>
                                     <select
                                         required
                                         value={formData.vehicleId}
@@ -203,13 +205,14 @@ export default function MaintenancePage() {
                                     </select>
                                 </div>
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Service Type:</label>
+                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Issue/service:</label>
                                     <input required type="text" value={formData.serviceType} onChange={e => setFormData({ ...formData, serviceType: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. Oil Change, Brake Repair" />
                                 </div>
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Description:</label>
-                                    <input type="text" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. Replaced front brake pads" />
+                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Date:</label>
+                                    <input required type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 text-white" />
                                 </div>
+                                {/* Retaining cost estimate as it is displayed in the table */}
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                                     <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Cost Estimate ($):</label>
                                     <input required type="number" value={formData.cost} onChange={e => setFormData({ ...formData, cost: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. 250" />
@@ -226,9 +229,9 @@ export default function MaintenancePage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-8 py-2 border border-blue-500 text-blue-500 hover:bg-blue-500/10 rounded-xl text-sm font-medium transition-colors"
+                                    className="px-8 py-2 border border-emerald-500 text-emerald-500 hover:bg-emerald-500/10 rounded-xl text-sm font-medium transition-colors"
                                 >
-                                    Log Service
+                                    Create
                                 </button>
                             </div>
                         </form>

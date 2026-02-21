@@ -10,13 +10,15 @@ export default function VehicleRegistryPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState('');
 
-    const [formData, setFormData] = useState({
+    const initialFormState = {
         plate: '',
         model: '',
-        type: '',
         capacity: '',
+        acquisitionCost: '',
+        type: '',
         odometer: ''
-    });
+    };
+    const [formData, setFormData] = useState(initialFormState);
 
     const fetchVehicles = async () => {
         try {
@@ -34,9 +36,30 @@ export default function VehicleRegistryPage() {
         }
     };
 
-    // React core hooks must be imported
-    // We already have useState, need to add useEffect in the import at top
-    // For now we assume it's imported (will fix import next)
+    const handleToggleStatus = async (vehicleId, currentStatus) => {
+        const newStatus = currentStatus === 'Out of Service' ? 'Available' : 'Out of Service';
+        try {
+            const res = await fetch(`http://localhost:5000/api/vehicles/${vehicleId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (res.ok) {
+                fetchVehicles(); // Refresh the list
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to update status');
+            }
+        } catch (error) {
+            console.error('Failed to toggle status', error);
+            alert('Network error occurred.');
+        }
+    };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -53,6 +76,7 @@ export default function VehicleRegistryPage() {
                     licensePlate: formData.plate,
                     name: formData.model,
                     maxLoadCapacity: formData.capacity,
+                    acquisitionCost: formData.acquisitionCost,
                     type: formData.type,
                     odometer: formData.odometer,
                     status: 'Available' // Default status
@@ -63,7 +87,7 @@ export default function VehicleRegistryPage() {
 
             if (res.ok) {
                 setMessage('Vehicle registered successfully!');
-                setFormData({ plate: '', model: '', type: '', capacity: '', odometer: '' });
+                setFormData(initialFormState);
                 fetchVehicles();
                 setTimeout(() => {
                     setIsFormOpen(false);
@@ -121,12 +145,15 @@ export default function VehicleRegistryPage() {
                         <tr className="border-b border-neutral-800 text-sm">
                             <th className="p-4 font-medium text-pink-500 border-r border-neutral-800">NO</th>
                             <th className="p-4 font-medium text-pink-500 border-r border-neutral-800">Plate</th>
-                            <th className="p-4 font-medium text-pink-500 border-r border-neutral-800">Model</th>
+                            <th className="p-4 font-medium text-pink-500 border-r border-neutral-800">Vehicle</th>
                             <th className="p-4 font-medium text-pink-500 border-r border-neutral-800">Type</th>
                             <th className="p-4 font-medium text-pink-500 border-r border-neutral-800">Capacity</th>
+                            <th className="p-4 font-medium text-pink-500 border-r border-neutral-800">Acquisition Cost</th>
                             <th className="p-4 font-medium text-pink-500 border-r border-neutral-800">Odometer</th>
                             <th className="p-4 font-medium text-pink-500 border-r border-neutral-800">Status</th>
-                            <th className="p-4 font-medium text-pink-500">Actions</th>
+                            {user?.role !== 'DISPATCHER' && (
+                                <th className="p-4 font-medium text-pink-500">Actions</th>
+                            )}
                         </tr>
                     </thead>
                     <tbody className="text-sm">
@@ -137,13 +164,30 @@ export default function VehicleRegistryPage() {
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.name}</td>
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.type || '-'}</td>
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.maxLoadCapacity} kg</td>
+                                <td className="p-4 border-r border-neutral-800 text-emerald-400 font-medium">${v.acquisitionCost || 0}</td>
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">{v.odometer}</td>
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300 underline decoration-amber-500 underline-offset-4">{v.status}</td>
-                                <td className="p-4 text-orange-400 font-medium">
-                                    <button className="p-1 hover:bg-neutral-700 rounded transition-colors text-orange-500">
-                                        <X size={16} />
-                                    </button>
-                                </td>
+                                <td className={`p-4 font-medium border-r border-neutral-800 ${v.status === 'Available' ? 'text-emerald-400' :
+                                    v.status === 'Out of Service' ? 'text-neutral-500' :
+                                        v.status === 'In Shop' ? 'text-orange-400' :
+                                            'text-blue-400'
+                                    }`}>{v.status}</td>
+                                {user?.role !== 'DISPATCHER' && (
+                                    <td className="p-4">
+                                        <button
+                                            onClick={() => handleToggleStatus(v.id, v.status)}
+                                            disabled={v.status === 'On Trip'} // Cannot retire a vehicle currently on a trip
+                                            className={`px-3 py-1 rounded text-xs font-medium transition-colors border ${v.status === 'Out of Service'
+                                                ? 'border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10'
+                                                : v.status === 'On Trip'
+                                                    ? 'border-neutral-700 text-neutral-600 cursor-not-allowed'
+                                                    : 'border-red-500/50 text-red-400 hover:bg-red-500/10'
+                                                }`}
+                                            title={v.status === 'On Trip' ? "Cannot modify status while on trip" : ""}
+                                        >
+                                            {v.status === 'Out of Service' ? 'Reactivate' : 'Retire'}
+                                        </button>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                         {vehicles.length === 0 && !isLoading && (
@@ -201,6 +245,10 @@ export default function VehicleRegistryPage() {
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                                     <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Max Payload (kg):</label>
                                     <input required type="number" value={formData.capacity} onChange={e => setFormData({ ...formData, capacity: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. 750" />
+                                </div>
+                                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Acquisition Cost ($):</label>
+                                    <input required type="number" value={formData.acquisitionCost} onChange={e => setFormData({ ...formData, acquisitionCost: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. 50000" />
                                 </div>
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                                     <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Initial Odometer:</label>

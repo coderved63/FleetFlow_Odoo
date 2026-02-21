@@ -24,7 +24,7 @@ router.get('/', authenticate, authorize(Viewers), async (req, res) => {
 // Create a new vehicle
 router.post('/', authenticate, authorize(Managers), async (req, res) => {
     try {
-        const { licensePlate, name, maxLoadCapacity, type, odometer, status } = req.body;
+        const { licensePlate, name, maxLoadCapacity, acquisitionCost, type, odometer, status } = req.body;
 
         // Basic validation
         if (!licensePlate || !name) {
@@ -36,6 +36,7 @@ router.post('/', authenticate, authorize(Managers), async (req, res) => {
                 licensePlate,
                 type,
                 maxLoadCapacity: parseFloat(maxLoadCapacity),
+                acquisitionCost: acquisitionCost ? parseFloat(acquisitionCost) : 0,
                 odometer: odometer ? parseFloat(odometer) : 0,
                 status: status || 'Available'
             }
