@@ -14,7 +14,7 @@ const vehicleRoutes = require('./routes/vehicles');
 const driverRoutes = require('./routes/drivers');
 const tripRoutes = require('./routes/trips');
 const maintenanceRoutes = require('./routes/maintenance');
-const expenseRoutes = require('./routes/expenses');
+const safetyRoutes = require('./routes/safety');
 
 // Middleware
 app.use(cors());
@@ -27,6 +27,7 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/drivers', driverRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/safety', safetyRoutes);
 app.use('/api/expenses', expenseRoutes);
 
 app.get('/api/health', (req, res) => {
