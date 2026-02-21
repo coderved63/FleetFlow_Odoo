@@ -21,7 +21,15 @@ function DutyPill({ status }) {
     );
 }
 
-function AvailabilityPill({ status }) {
+function AvailabilityPill({ status, dutyStatus }) {
+    // BREAK and SUSPENDED are always "Not Available" regardless of stored value
+    if (dutyStatus === 'SUSPENDED' || dutyStatus === 'BREAK') {
+        return (
+            <span className="px-2.5 py-1 rounded-full text-xs font-semibold border bg-neutral-800 text-neutral-500 border-neutral-700">
+                Not Available
+            </span>
+        );
+    }
     const map = {
         AVAILABLE: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
         ON_TRIP:   'bg-violet-500/15 text-violet-400 border-violet-500/30',
@@ -250,6 +258,12 @@ export default function SafetyPage() {
     // Modals
     const [showCreate, setShowCreate] = useState(false);
     const [incidentDriver, setIncidentDriver] = useState(null);
+    const [toast, setToast] = useState(null);
+
+    const showToast = (msg, type = 'error') => {
+        setToast({ msg, type });
+        setTimeout(() => setToast(null), 3500);
+    };
 
     const fetchDrivers = useCallback(async () => {
         setLoading(true);
@@ -275,12 +289,51 @@ export default function SafetyPage() {
     }, [fetchDrivers, token, canAccess]);
 
     const changeStatus = async (driverId, dutyStatus) => {
-        await fetch(`http://localhost:5000/api/safety/drivers/${driverId}/status`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ dutyStatus })
-        });
-        fetchDrivers();
+        // Optimistic update — reflect change immediately in UI
+        setDrivers(prev => prev.map(d => {
+            if (d.id !== driverId) return d;
+            const updated = { ...d, dutyStatus };
+            // Auto-reset availability display for BREAK/SUSPENDED
+            if (dutyStatus === 'SUSPENDED' || dutyStatus === 'BREAK') {
+                updated.availability = 'AVAILABLE';
+            }
+            return updated;
+        }));
+        try {
+            const res = await fetch(`http://localhost:5000/api/safety/drivers/${driverId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ dutyStatus })
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                showToast(data.error || 'Failed to update duty status');
+                fetchDrivers(); // Revert to server state
+            }
+        } catch {
+            showToast('Network error — could not update status');
+            fetchDrivers();
+        }
+    };
+
+    const changeAvailability = async (driverId, availability) => {
+        // Optimistic update
+        setDrivers(prev => prev.map(d => d.id === driverId ? { ...d, availability } : d));
+        try {
+            const res = await fetch(`http://localhost:5000/api/safety/drivers/${driverId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ availability })
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                showToast(data.error || 'Failed to update availability');
+                fetchDrivers();
+            }
+        } catch {
+            showToast('Network error — could not update availability');
+            fetchDrivers();
+        }
     };
 
     if (!canAccess) {
@@ -305,6 +358,16 @@ export default function SafetyPage() {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
+            {/* Toast Notification */}
+            {toast && (
+                <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-xl text-sm font-medium border backdrop-blur-sm transition-all ${
+                    toast.type === 'error'
+                        ? 'bg-red-500/20 border-red-500/40 text-red-300'
+                        : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                }`}>
+                    {toast.msg}
+                </div>
+            )}
             {/* Header */}
             <div className="flex items-start justify-between flex-wrap gap-4">
                 <div>
@@ -455,7 +518,22 @@ export default function SafetyPage() {
                                         </td>
                                         {/* Availability */}
                                         <td className="p-4">
-                                            <AvailabilityPill status={driver.availability} />
+                                            {/* Only ON_DUTY drivers can have availability toggled by Safety Officer */}
+                                            {!isReadOnly && driver.dutyStatus === 'ON_DUTY' ? (
+                                                <div className="relative">
+                                                    <select
+                                                        value={driver.availability}
+                                                        onChange={e => changeAvailability(driver.id, e.target.value)}
+                                                        className="appearance-none bg-neutral-950/80 border border-neutral-800 rounded-lg pl-3 pr-7 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                                                    >
+                                                        <option value="AVAILABLE">Available</option>
+                                                        <option value="ON_TRIP">On Trip</option>
+                                                    </select>
+                                                    <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
+                                                </div>
+                                            ) : (
+                                                <AvailabilityPill status={driver.availability} dutyStatus={driver.dutyStatus} />
+                                            )}
                                         </td>
                                         {/* Actions */}
                                         <td className="p-4">

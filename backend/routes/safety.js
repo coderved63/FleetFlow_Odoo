@@ -85,15 +85,28 @@ router.post('/drivers', async (req, res) => {
 });
 
 // @route   PUT /api/safety/drivers/:id/status
-// @desc    Update driver duty status
+// @desc    Update driver duty status (and optionally availability)
 router.put('/drivers/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
-    const { dutyStatus } = req.body; // 'ON_DUTY', 'BREAK', 'SUSPENDED'
+    const { dutyStatus, availability } = req.body;
+
+    const updateData = {};
+    if (dutyStatus !== undefined) {
+      updateData.dutyStatus = dutyStatus;
+      // Auto-enforce availability constraints
+      if (dutyStatus === 'SUSPENDED' || dutyStatus === 'BREAK') {
+        updateData.availability = 'AVAILABLE'; // reset; shown as "Not Available" in UI
+      }
+    }
+    // Safety Officer can also explicitly set availability (only meaningful when ON_DUTY)
+    if (availability !== undefined) {
+      updateData.availability = availability;
+    }
 
     const updatedDriver = await prisma.driver.update({
       where: { id: parseInt(id) },
-      data: { dutyStatus },
+      data: updateData,
     });
     res.json(updatedDriver);
   } catch (err) {
