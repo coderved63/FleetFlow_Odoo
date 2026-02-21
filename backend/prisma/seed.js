@@ -1,10 +1,12 @@
 const bcrypt = require('bcryptjs');
-const prisma = require('./client');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 async function main() {
     const commonPassword = await bcrypt.hash('password123', 10);
     const adminPassword = await bcrypt.hash('admin123', 10);
 
+    // Users
     const users = [
         { email: 'admin@fleetflow.com', name: 'System Admin', role: 'ADMIN', password: adminPassword },
         { email: 'manager@fleetflow.com', name: 'Fleet Manager', role: 'FLEET_MANAGER', password: commonPassword },
@@ -19,16 +21,17 @@ async function main() {
             update: {},
             create: u,
         });
-        console.log(`User created: ${u.email} (${u.role})`);
     }
 
-    console.log('\n--- Seeding Fleet Data ---');
+    console.log('Users seeded');
 
+    // Vehicles
     const vehiclesData = [
         { name: 'Bharat Benz 5528', licensePlate: 'MH-12-PQ-1234', maxLoadCapacity: 25000, type: 'TRUCK', odometer: 15600, status: 'Available', acquisitionCost: 5000000 },
-        { name: 'Tata Ultra T.7', licensePlate: 'MH-14-GH-5678', maxLoadCapacity: 7000, type: 'TRUCK', odometer: 8400, status: 'Available', acquisitionCost: 2500000 },
+        { name: 'Tata Ultra T.7', licensePlate: 'MH-14-GH-5678', maxLoadCapacity: 7000, type: 'TRUCK', odometer: 8400, status: 'On Trip', acquisitionCost: 2500000 },
         { name: 'Mahindra Supro', licensePlate: 'MH-43-KL-9012', maxLoadCapacity: 1000, type: 'VAN', odometer: 12000, status: 'Available', acquisitionCost: 800000 },
-        { name: 'Eicher Pro 2055', licensePlate: 'DL-01-AX-4321', maxLoadCapacity: 5000, type: 'TRUCK', odometer: 5000, status: 'Available', acquisitionCost: 2000000 },
+        { name: 'Eicher Pro 2055', licensePlate: 'DL-01-AX-4321', maxLoadCapacity: 5000, type: 'TRUCK', odometer: 5000, status: 'In Shop', acquisitionCost: 2000000 },
+        { name: 'Volvo FH16', licensePlate: 'TN-01-AB-1234', maxLoadCapacity: 40000, type: 'TRUCK', odometer: 2000, status: 'Available', acquisitionCost: 7500000 },
     ];
 
     for (const v of vehiclesData) {
@@ -37,52 +40,16 @@ async function main() {
             update: v,
             create: v,
         });
-        console.log(`Vehicle created: ${v.name} (${v.licensePlate})`);
     }
 
+    console.log('Vehicles seeded');
+
+    // Drivers
     const driversData = [
-        {
-            name: 'Rajesh Kumar',
-            licenseExpiry: new Date('2028-12-31'),
-            status: 'On Duty',
-            license: {
-                create: {
-                    fullName: 'Rajesh Kumar',
-                    licenseNo: 'DL-MH12-2020-001',
-                    vehicleType: 'TRUCK',
-                    expiryDate: new Date('2028-12-31'),
-                    status: 'ON_DUTY'
-                }
-            }
-        },
-        {
-            name: 'Suresh Patil',
-            licenseExpiry: new Date('2027-06-15'),
-            status: 'On Duty',
-            license: {
-                create: {
-                    fullName: 'Suresh Patil',
-                    licenseNo: 'DL-MH14-2021-002',
-                    vehicleType: 'TRUCK',
-                    expiryDate: new Date('2027-06-15'),
-                    status: 'ON_DUTY'
-                }
-            }
-        },
-        {
-            name: 'Amit Sharma',
-            licenseExpiry: new Date('2029-01-10'),
-            status: 'On Duty',
-            license: {
-                create: {
-                    fullName: 'Amit Sharma',
-                    licenseNo: 'DL-MH43-2022-003',
-                    vehicleType: 'VAN',
-                    expiryDate: new Date('2029-01-10'),
-                    status: 'ON_DUTY'
-                }
-            }
-        }
+        { name: 'Rajesh Kumar', licenseExpiry: new Date('2028-12-31'), status: 'On Duty' },
+        { name: 'Suresh Patil', licenseExpiry: new Date('2027-06-15'), status: 'On Duty' },
+        { name: 'Amit Sharma', licenseExpiry: new Date('2029-01-10'), status: 'On Duty' },
+        { name: 'Vikram Singh', licenseExpiry: new Date('2026-05-20'), status: 'Off Duty' },
     ];
 
     for (const d of driversData) {
@@ -91,10 +58,21 @@ async function main() {
             update: { name: d.name, status: d.status, licenseExpiry: d.licenseExpiry },
             create: d,
         });
-        console.log(`Driver created: ${d.name}`);
     }
 
-    console.log('\n--- Seeding Sample Trips ---');
+    console.log('Drivers seeded');
+
+    // Maintenance Logs for ROI calculation
+    const maintenanceData = [
+        { vehicleId: 1, serviceType: 'Oil Change', cost: 5000, date: new Date('2024-01-10'), status: 'Completed' },
+        { vehicleId: 4, serviceType: 'Engine Repair', cost: 45000, date: new Date('2024-01-15'), status: 'Completed' },
+    ];
+
+    for (const m of maintenanceData) {
+        await prisma.maintenanceLog.create({ data: m });
+    }
+
+    // Trips with Revenue
     const sampleTrips = [
         {
             tripId: 'TRIP-2024-001',
@@ -105,10 +83,12 @@ async function main() {
             destination: 'Pune',
             estimatedDistance: 150,
             estimatedFuelPricePerKm: 10,
-            estimatedTripPrice: 2000,
+            estimatedTripPrice: 20000,
             status: 'Completed',
             actualDistance: 160,
-            actualFuelCost: 1600
+            actualFuelCost: 16000,
+            revenue: 250000, // Rs. 2.5L
+            endDate: new Date('2024-01-05')
         },
         {
             tripId: 'TRIP-2024-002',
@@ -119,10 +99,28 @@ async function main() {
             destination: 'Jaipur',
             estimatedDistance: 280,
             estimatedFuelPricePerKm: 12,
-            estimatedTripPrice: 4000,
+            estimatedTripPrice: 40000,
             status: 'Completed',
             actualDistance: 290,
-            actualFuelCost: 3480
+            actualFuelCost: 34800,
+            revenue: 400000, // Rs. 4L
+            endDate: new Date('2024-01-15')
+        },
+        {
+            tripId: 'TRIP-2024-003',
+            vehicleId: 3,
+            driverId: 3,
+            cargoWeight: 800,
+            origin: 'Bangalore',
+            destination: 'Mysore',
+            estimatedDistance: 140,
+            estimatedFuelPricePerKm: 8,
+            estimatedTripPrice: 15000,
+            status: 'Completed',
+            actualDistance: 145,
+            actualFuelCost: 12000,
+            revenue: 120000, // Rs. 1.2L
+            endDate: new Date('2024-01-20')
         }
     ];
 
@@ -132,12 +130,9 @@ async function main() {
             update: t,
             create: t
         });
-        console.log(`Trip created: ${t.tripId}`);
     }
 
-    console.log('\n--- Credentials for Testing ---');
-    console.log('Admin: admin@fleetflow.com / admin123');
-    console.log('Others: [email]@fleetflow.com / password123');
+    console.log('Trips seeded with revenue');
 }
 
 main()

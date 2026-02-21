@@ -3,14 +3,28 @@ const { authenticate, authorize } = require('../middleware/auth');
 const prisma = require('../prisma/client');
 const router = express.Router();
 
-// Get all logged expenses
+// Get all logged expenses with trip revenue
 router.get('/', authenticate, authorize(['ADMIN', 'FINANCIAL_ANALYST']), async (req, res) => {
     try {
         const expenses = await prisma.expense.findMany({
             orderBy: { createdAt: 'desc' }
         });
-        res.json(expenses);
+
+        // Enrich expenses with revenue from Trip table
+        const enrichedExpenses = await Promise.all(expenses.map(async (expense) => {
+            const trip = await prisma.trip.findUnique({
+                where: { tripId: expense.tripId },
+                select: { revenue: true }
+            });
+            return {
+                ...expense,
+                revenue: trip ? trip.revenue : 0
+            };
+        }));
+
+        res.json(enrichedExpenses);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Failed to fetch expenses' });
     }
 });
@@ -18,7 +32,6 @@ router.get('/', authenticate, authorize(['ADMIN', 'FINANCIAL_ANALYST']), async (
 // Get completed and unlogged trips for selection
 router.get('/pending-trips', authenticate, authorize(['ADMIN', 'FINANCIAL_ANALYST']), async (req, res) => {
     try {
-        // Find trips that don't have an entry in the Expense table
         const loggedExpenses = await prisma.expense.findMany({
             select: { tripId: true }
         });
@@ -51,7 +64,6 @@ router.post('/', authenticate, authorize(['ADMIN', 'FINANCIAL_ANALYST']), async 
             return res.status(400).json({ error: 'Trip ID is required' });
         }
 
-        // Create the expense record
         const expense = await prisma.expense.create({
             data: {
                 tripId,
@@ -61,9 +73,6 @@ router.post('/', authenticate, authorize(['ADMIN', 'FINANCIAL_ANALYST']), async 
                 miscExpense: parseFloat(miscExpense || 0)
             }
         });
-
-        // NOTE: We don't update the Trip table status as per strict non-modification rules.
-        // Status is derived by checking existence in the Expense table.
 
         res.status(201).json(expense);
     } catch (error) {

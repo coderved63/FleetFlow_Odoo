@@ -97,8 +97,8 @@ export default function ExpensePage() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">
-            {/* Top Bar: Search and Filters (Matching Image) */}
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100 pb-10">
+            {/* Top Bar: Search and Filters */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-neutral-900 border border-neutral-800 p-4 rounded-xl shadow-sm">
                 <div className="w-full md:w-1/2 flex items-center bg-neutral-950 border border-neutral-700 rounded-lg px-4 transition-focus-within focus-within:border-blue-500">
                     <Search className="text-neutral-500" size={18} />
@@ -134,60 +134,63 @@ export default function ExpensePage() {
                 </div>
             )}
 
-            {/* Expense Table (Matching Image Labels and Logic) */}
+            {/* Expense Table */}
             <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden mt-8 shadow-sm">
                 <table className="w-full text-center border-collapse">
                     <thead>
-                        <tr className="border-b border-neutral-800 text-sm">
+                        <tr className="border-b border-neutral-800 text-xs">
                             <th className="p-4 font-bold text-pink-500 border-r border-neutral-800">Trip ID</th>
                             <th className="p-4 font-bold text-pink-500 border-r border-neutral-800">Driver</th>
                             <th className="p-4 font-bold text-pink-500 border-r border-neutral-800">Distance</th>
-                            <th className="p-4 font-bold text-pink-500 border-r border-neutral-800">Fuel Expense</th>
-                            <th className="p-4 font-bold text-pink-500 border-r border-neutral-800">Misc. Expen</th>
+                            <th className="p-4 font-bold text-pink-500 border-r border-neutral-800">Revenue</th>
+                            <th className="p-4 font-bold text-pink-500 border-r border-neutral-800">Fuel Exp.</th>
+                            <th className="p-4 font-bold text-pink-500 border-r border-neutral-800">Misc Exp.</th>
                             <th className="p-4 font-bold text-pink-500">Status</th>
                         </tr>
                     </thead>
                     <tbody className="text-sm">
                         {expenses.length > 0 ? expenses.map((e) => (
                             <tr key={e.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">{e.tripId}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300 font-medium">{e.tripId}</td>
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">{e.driver}</td>
                                 <td className="p-4 border-r border-neutral-800 text-neutral-300">{e.distance} km</td>
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">₹{e.fuelCost}</td>
-                                <td className="p-4 border-r border-neutral-800 text-neutral-300">₹{e.miscExpense}</td>
+                                <td className="p-4 border-r border-neutral-800 text-emerald-400 font-bold">₹{(e.revenue || 0).toLocaleString()}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">₹{e.fuelCost.toLocaleString()}</td>
+                                <td className="p-4 border-r border-neutral-800 text-neutral-300">₹{e.miscExpense.toLocaleString()}</td>
                                 <td className="p-4 text-emerald-400 font-bold uppercase tracking-wider text-[10px]">
-                                    <span className="bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">Done</span>
+                                    <span className="bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">Logged</span>
                                 </td>
                             </tr>
                         )) : !isLoading && (
                             <tr>
-                                <td colSpan="6" className="p-8 text-center text-neutral-500 font-medium italic">No expenses recorded. Use 'Add an Expense' to get started.</td>
+                                <td colSpan="7" className="p-8 text-center text-neutral-500 font-medium italic">No expenses recorded.</td>
                             </tr>
                         )}
                         {isLoading && (
                             <tr>
-                                <td colSpan="6" className="p-8 text-center text-neutral-500 font-medium">Fetching records...</td>
+                                <td colSpan="7" className="p-8 text-center text-neutral-500 font-medium">Fetching records...</td>
                             </tr>
                         )}
                         {[...Array(Math.max(0, 6 - expenses.length))].map((_, i) => (
                             <tr key={`empty-${i}`} className="border-b border-neutral-800/30 last:border-0 h-14">
-                                <td className="border-r border-neutral-800">•</td>
-                                <td className="border-r border-neutral-800">•</td>
-                                <td className="border-r border-neutral-800">•</td>
-                                <td className="border-r border-neutral-800">•</td>
-                                <td className="border-r border-neutral-800">•</td>
-                                <td>•</td>
+                                <td className="border-r border-neutral-800 text-neutral-600">•</td>
+                                <td className="border-r border-neutral-800 text-neutral-600">•</td>
+                                <td className="border-r border-neutral-800 text-neutral-600">•</td>
+                                <td className="border-r border-neutral-800 text-neutral-600">•</td>
+                                <td className="border-r border-neutral-800 text-neutral-600">•</td>
+                                <td className="border-r border-neutral-800 text-neutral-600">•</td>
+                                <td className="text-neutral-600">•</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
 
-            {/* Add Expense Modal (Matching Image) */}
+            {/* Add Expense Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-neutral-900 border border-neutral-800 rounded-3xl w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-                        <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-blue-500/5 rounded-t-3xl text-center">
+                    <div className="bg-neutral-900 border border-neutral-800 rounded-3xl w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 relative">
+                        <div className="p-6 border-b border-neutral-800 flex justify-between items-center bg-blue-500/5 rounded-t-3xl">
                             <h2 className="w-full text-lg font-bold text-white flex items-center justify-center gap-2">
                                 <Layers className="text-blue-500" size={20} />
                                 New Expense
@@ -258,7 +261,7 @@ export default function ExpensePage() {
                                     disabled={!formData.tripId}
                                     className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98]"
                                 >
-                                    Create
+                                    Log Expense
                                 </button>
                                 <button
                                     type="button"
