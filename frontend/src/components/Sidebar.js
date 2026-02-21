@@ -1,6 +1,7 @@
 'use client';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import {
     LayoutDashboard,
     Truck,
@@ -48,17 +49,17 @@ export default function Sidebar() {
                 {navItems.map((item) => {
                     const isActive = pathname === item.href;
                     return (
-                        <a
+                        <Link
                             key={item.name}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+                                ? 'bg-blue-600 text-white'
+                                : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
                                 }`}
                         >
                             {item.icon}
                             <span className="font-medium">{item.name}</span>
-                        </a>
+                        </Link>
                     );
                 })}
             </nav>
