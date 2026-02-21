@@ -150,7 +150,7 @@ export default function MaintenancePage() {
                                 </td>
                                 <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">{log.serviceType} / {log.description}</td>
                                 <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">{new Date(log.date).toLocaleDateString()}</td>
-                                <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">${log.cost}</td>
+                                <td className="p-4 border-r border-neutral-800 text-blue-400 font-medium">₹{log.cost}</td>
                                 <td className="p-4 text-orange-400 font-medium pointer-events-none">{log.status}</td>
                             </tr>
                         ))}
@@ -214,7 +214,7 @@ export default function MaintenancePage() {
                                 </div>
                                 {/* Retaining cost estimate as it is displayed in the table */}
                                 <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Cost Estimate ($):</label>
+                                    <label className="text-neutral-300 text-sm whitespace-nowrap w-32">Cost Estimate (₹):</label>
                                     <input required type="number" value={formData.cost} onChange={e => setFormData({ ...formData, cost: e.target.value })} className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. 250" />
                                 </div>
                             </div>
