@@ -51,11 +51,7 @@ router.get('/filter-drivers', authenticate, authorize(TripManagers), async (req,
                 license: {
                     vehicleType: vehicleType
                 },
-                // Safety Officer restrictions
-                dutyStatus: 'ON_DUTY',
-                availability: 'AVAILABLE',
-                licenseExpiry: { gt: new Date() },
-                safetyScore: { gte: 40 }
+                status: 'On Duty'
             },
             include: {
                 license: true
@@ -85,18 +81,6 @@ router.post('/', authenticate, authorize(TripManagers), async (req, res) => {
         const vehicle = await prisma.vehicle.findUnique({ where: { id: parseInt(vehicleId) } });
         if (!vehicle) return res.status(404).json({ error: 'Vehicle not found' });
 
-        const driver = await prisma.driver.findUnique({ where: { id: parseInt(driverId) } });
-        if (!driver) return res.status(404).json({ error: 'Driver not found' });
-
-        // Safety Officer Validation Rules
-        const today = new Date();
-        if (driver.dutyStatus !== 'ON_DUTY' || 
-            driver.availability !== 'AVAILABLE' || 
-            driver.licenseExpiry < today || 
-            driver.safetyScore < 40) {
-            return res.status(403).json({ error: 'Driver not eligible for assignment' });
-        }
-
         // Generate Unique Trip ID
         const date = new Date();
         const tripCount = await prisma.trip.count();
@@ -122,11 +106,6 @@ router.post('/', authenticate, authorize(TripManagers), async (req, res) => {
         await prisma.vehicle.update({
             where: { id: parseInt(vehicleId) },
             data: { status: 'On Trip' }
-        });
-
-        await prisma.driver.update({
-            where: { id: parseInt(driverId) },
-            data: { availability: 'ON_TRIP' }
         });
 
         res.status(201).json(trip);
@@ -175,11 +154,6 @@ router.patch('/:id/complete', authenticate, authorize(TripManagers), async (req,
                 status: 'Available',
                 odometer: parseFloat(endOdometer)
             }
-        });
-
-        await prisma.driver.update({
-            where: { id: trip.driverId },
-            data: { availability: 'AVAILABLE' }
         });
 
         res.json(updatedTrip);
