@@ -1,8 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { PrismaClient } = require('@prisma/client');
 const { authenticate, authorize } = require('../middleware/auth');
-const prisma = new PrismaClient();
+const prisma = require('../prisma/client');
 const router = express.Router();
 
 // Get all users (Admin only)
