@@ -50,10 +50,22 @@ router.post('/', authenticate, authorize(MaintenanceRoles), async (req, res) => 
             data: { status: 'In Shop' }
         });
 
+        // Business Logic: Also log this as an Expense
+        await prisma.expense.create({
+            data: {
+                tripId: `MAINT-${log.id}`,
+                driver: 'SYSTEM', // Not applicable for maintenance
+                distance: 0,
+                fuelCost: 0,
+                miscExpense: parsedCost,
+                createdAt: new Date(),
+            }
+        });
+
         res.status(201).json(log);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Failed to log maintenance' });
+        res.status(500).json({ error: 'Failed to log maintenance and expense' });
     }
 });
 
