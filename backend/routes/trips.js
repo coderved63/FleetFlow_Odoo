@@ -23,39 +23,86 @@ router.get('/', authenticate, authorize(TripViewers), async (req, res) => {
     }
 });
 
+// Filter vehicles by cargo weight
+router.get('/filter-vehicles', authenticate, authorize(TripManagers), async (req, res) => {
+    try {
+        const { cargoWeight } = req.query;
+        const weight = parseFloat(cargoWeight);
+
+        const vehicles = await prisma.vehicle.findMany({
+            where: {
+                maxLoadCapacity: { gte: weight },
+                status: 'Available'
+            }
+        });
+        res.json(vehicles);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to filter vehicles' });
+    }
+});
+
+// Filter drivers by vehicle type compatibility
+router.get('/filter-drivers', authenticate, authorize(TripManagers), async (req, res) => {
+    try {
+        const { vehicleType } = req.query;
+
+        const drivers = await prisma.driver.findMany({
+            where: {
+                license: {
+                    vehicleType: vehicleType
+                },
+                status: 'On Duty'
+            },
+            include: {
+                license: true
+            }
+        });
+        res.json(drivers);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to filter drivers' });
+    }
+});
+
 // Create a new trip (dispatch)
 router.post('/', authenticate, authorize(TripManagers), async (req, res) => {
     try {
-        // Expected payload matching frontend new trip form
-        const { vehicleId, driverId, cargoWeight, startOdometer, endOdometer, status } = req.body;
+        const { 
+            vehicleId, 
+            driverId, 
+            cargoWeight, 
+            origin, 
+            destination, 
+            estimatedDistance, 
+            estimatedFuelPricePerKm, 
+            estimatedTripPrice,
+            status 
+        } = req.body;
 
-        // Ensure vehicle exists and is available
         const vehicle = await prisma.vehicle.findUnique({ where: { id: parseInt(vehicleId) } });
         if (!vehicle) return res.status(404).json({ error: 'Vehicle not found' });
-        if (vehicle.status !== 'Available') return res.status(400).json({ error: 'Vehicle is not available for dispatch' });
 
-        // Ensure driver exists
-        const driver = await prisma.driver.findUnique({ where: { id: parseInt(driverId) } });
-        if (!driver) return res.status(404).json({ error: 'Driver not found' });
-
-        // Parse cargo weight
-        const parsedWeight = parseFloat(cargoWeight);
-        if (parsedWeight > vehicle.maxLoadCapacity) {
-            return res.status(400).json({ error: `Cargo weight exceeds vehicle max capacity of ${vehicle.maxLoadCapacity}kg` });
-        }
+        // Generate Unique Trip ID
+        const date = new Date();
+        const tripCount = await prisma.trip.count();
+        const tripId = `TRIP-${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}-${(tripCount + 1).toString().padStart(3, '0')}`;
 
         const trip = await prisma.trip.create({
             data: {
+                tripId,
                 vehicleId: parseInt(vehicleId),
                 driverId: parseInt(driverId),
-                cargoWeight: parsedWeight,
+                cargoWeight: parseFloat(cargoWeight),
+                origin,
+                destination,
+                estimatedDistance: parseFloat(estimatedDistance),
+                estimatedFuelPricePerKm: parseFloat(estimatedFuelPricePerKm),
+                estimatedTripPrice: parseFloat(estimatedTripPrice),
                 status: status || 'Dispatched',
-                startOdometer: startOdometer ? parseFloat(startOdometer) : vehicle.odometer,
-                endOdometer: endOdometer ? parseFloat(endOdometer) : null,
+                startOdometer: vehicle.odometer,
             }
         });
 
-        // Update vehicle status to On Trip
+        // Update vehicle and driver status
         await prisma.vehicle.update({
             where: { id: parseInt(vehicleId) },
             data: { status: 'On Trip' }
@@ -68,35 +115,51 @@ router.post('/', authenticate, authorize(TripManagers), async (req, res) => {
     }
 });
 
-// Update trip status (e.g. Completed, Cancelled)
-router.patch('/:id/status', authenticate, authorize(TripManagers), async (req, res) => {
+// Complete trip and update calculations
+router.patch('/:id/complete', authenticate, authorize(TripManagers), async (req, res) => {
     try {
         const { id } = req.params;
-        const { status, endOdometer } = req.body;
+        const { endOdometer, actualFuelCostPerKm } = req.body;
 
-        const trip = await prisma.trip.update({
+        const trip = await prisma.trip.findUnique({ 
+            where: { id: parseInt(id) },
+            include: { vehicle: true }
+        });
+
+        if (!trip) return res.status(404).json({ error: 'Trip not found' });
+
+        const startOdometer = trip.startOdometer || trip.vehicle.odometer;
+        const actualDistance = parseFloat(endOdometer) - startOdometer;
+        const actualFuelCost = actualDistance * parseFloat(actualFuelCostPerKm);
+        
+        // Simple mock for actual trip price (can be adjusted)
+        const actualTripPrice = actualFuelCost * 1.5; 
+
+        const updatedTrip = await prisma.trip.update({
             where: { id: parseInt(id) },
             data: {
-                status,
-                endOdometer: endOdometer ? parseFloat(endOdometer) : undefined
+                status: 'Completed',
+                endDate: new Date(),
+                endOdometer: parseFloat(endOdometer),
+                actualDistance,
+                actualFuelCost,
+                actualTripPrice
             }
         });
 
-        // If trip is completed or cancelled, make vehicle available again
-        if (['Completed', 'Cancelled'].includes(status)) {
-            await prisma.vehicle.update({
-                where: { id: trip.vehicleId },
-                data: {
-                    status: 'Available',
-                    odometer: endOdometer ? parseFloat(endOdometer) : undefined
-                }
-            });
-        }
+        // Update vehicle odometer and status
+        await prisma.vehicle.update({
+            where: { id: trip.vehicleId },
+            data: {
+                status: 'Available',
+                odometer: parseFloat(endOdometer)
+            }
+        });
 
-        res.json(trip);
+        res.json(updatedTrip);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Failed to update trip status' });
+        res.status(500).json({ error: 'Failed to complete trip' });
     }
 });
 

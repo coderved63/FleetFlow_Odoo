@@ -43,26 +43,32 @@ export default function MainDashboard() {
                     <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Active Fleet (On Trip)</h3>
                     <p className="text-white text-4xl font-semibold">145</p>
                 </div>
-                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
-                    <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Vehicles In Shop</h3>
-                    <p className="text-orange-400 text-4xl font-semibold">12</p>
-                </div>
+                {user?.role !== 'DISPATCHER' && (
+                    <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
+                        <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Vehicles In Shop</h3>
+                        <p className="text-orange-400 text-4xl font-semibold">12</p>
+                    </div>
+                )}
                 <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
                     <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Fleet Utilization Rate</h3>
                     <p className="text-emerald-400 text-4xl font-semibold">88%</p>
                 </div>
-                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
-                    <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Maintenance Alerts</h3>
-                    <p className="text-red-400 text-4xl font-semibold">5</p>
-                </div>
+                {user?.role !== 'DISPATCHER' && (
+                    <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
+                        <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Maintenance Alerts</h3>
+                        <p className="text-red-400 text-4xl font-semibold">5</p>
+                    </div>
+                )}
                 <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
                     <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Pending Cargo</h3>
                     <p className="text-blue-400 text-4xl font-semibold">$450k / 20 tons</p>
                 </div>
-                <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
-                    <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Safety Alerts</h3>
-                    <p className="text-yellow-400 text-4xl font-semibold">2 Flags</p>
-                </div>
+                {user?.role !== 'DISPATCHER' && (
+                    <div className="bg-neutral-900 border border-neutral-800 rounded-3xl p-6 flex flex-col shadow-sm">
+                        <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Safety Alerts</h3>
+                        <p className="text-yellow-400 text-4xl font-semibold">2 Flags</p>
+                    </div>
+                )}
             </div>
 
             {/* Data Table */}

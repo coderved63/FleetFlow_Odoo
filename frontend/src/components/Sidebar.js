@@ -44,6 +44,11 @@ export default function Sidebar() {
             { name: 'Vehicle Registry', icon: <Truck size={20} />, href: '/dashboard/vehicles' },
             { name: 'Maintenance', icon: <Wrench size={20} />, href: '/dashboard/maintenance' }
         );
+    } else if (user?.role === 'DISPATCHER') {
+        // Dispatcher focuses on Trip Dispatching strictly
+        navItems.push(
+            { name: 'Trip Dispatcher', icon: <MapPin size={20} />, href: '/dashboard/dispatch' }
+        );
     }
 
     return (
