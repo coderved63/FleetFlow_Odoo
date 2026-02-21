@@ -1,9 +1,29 @@
 'use client';
+import { useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function MainDashboard() {
     const { user } = useAuthStore();
+    const router = useRouter();
+
+    // Role-based auto-redirect: SAFETY_OFFICER should never land here
+    useEffect(() => {
+        const roleRedirects = {
+            SAFETY_OFFICER:    '/dashboard/safety',
+            DISPATCHER:        '/dashboard/dispatch',
+            FINANCIAL_ANALYST: '/dashboard/expense',
+        };
+        if (user?.role && roleRedirects[user.role]) {
+            router.replace(roleRedirects[user.role]);
+        }
+    }, [user, router]);
+
+    // Don't render generic dashboard for redirected roles
+    if (['SAFETY_OFFICER', 'DISPATCHER', 'FINANCIAL_ANALYST'].includes(user?.role)) {
+        return null;
+    }
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">

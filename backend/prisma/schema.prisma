@@ -15,6 +15,24 @@ enum Role {
   FINANCIAL_ANALYST
 }
 
+enum DriverAvailability {
+  AVAILABLE
+  ON_TRIP
+}
+
+enum DutyStatus {
+  ON_DUTY
+  BREAK
+  SUSPENDED
+}
+
+enum IncidentType {
+  LATE
+  COMPLAINT
+  MINOR
+  MAJOR
+}
+
 enum VehicleType {
   TRUCK
   VAN
@@ -60,16 +78,6 @@ model User {
 model Vehicle {
   id              Int         @id @default(autoincrement())
   name            String
-<<<<<<< HEAD
-  licensePlate    String   @unique
-  maxLoadCapacity Float // in kg
-  acquisitionCost Float    @default(0) // Need this for ROI formula
-  type            String   @default("Truck")
-  odometer        Float    @default(0)
-  status          String   @default("Available") // Available, On Trip, In Shop, Out of Service
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-=======
   licensePlate    String      @unique
   maxLoadCapacity Float       // in kg
   type            VehicleType @default(TRUCK)
@@ -77,7 +85,6 @@ model Vehicle {
   status          String      @default("Available") // Available, On Trip, In Shop, Out of Service
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
->>>>>>> e9ccc02b583ed7cae6773866f36bd853aca3b724
 
   trips           Trip[]
   maintenanceLogs MaintenanceLog[]
@@ -85,32 +92,37 @@ model Vehicle {
 }
 
 model Driver {
-  id            Int       @id @default(autoincrement())
-  name          String
-  licenseExpiry DateTime
-  status        String    @default("On Duty") // On Duty, Off Duty, Suspended
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id              Int       @id @default(autoincrement())
+  name            String
+  licenseExpiry   DateTime
+  status          String    @default("On Duty") // On Duty, Off Duty, Suspended
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  licenseNumber   String?   @unique
+  licenseCategory String?   // TRUCK, VAN, BIKE
+  dutyStatus      DutyStatus @default(ON_DUTY)
+  availability    DriverAvailability @default(AVAILABLE)
+  safetyScore     Int       @default(100)
+  complaints      Int       @default(0)
 
   license         License?
   trips           Trip[]
+  incidents       DriverIncident[]
+}
+
+model DriverIncident {
+  id              Int          @id @default(autoincrement())
+  driver          Driver       @relation(fields: [driverId], references: [id])
+  driverId        Int
+  type            IncidentType
+  description     String
+  date            DateTime     @default(now())
+  severityScore   Int          
+  createdAt       DateTime     @default(now())
 }
 
 model Trip {
-<<<<<<< HEAD
-  id            Int      @id @default(autoincrement())
-  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id])
-  vehicleId     Int
-  driver        Driver   @relation(fields: [driverId], references: [id])
-  driverId      Int
-  cargoWeight   Float // in kg
-  revenue       Float    @default(0) // Need this for ROI formula
-  status        String   @default("Draft") // Draft, Dispatched, Completed, Cancelled
-  startOdometer Float?
-  endOdometer   Float?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-=======
   id                      Int       @id @default(autoincrement())
   tripId                  String    @unique
   vehicle                 Vehicle   @relation(fields: [vehicleId], references: [id])
@@ -134,7 +146,6 @@ model Trip {
   actualTripPrice         Float?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
->>>>>>> e9ccc02b583ed7cae6773866f36bd853aca3b724
 }
 
 model MaintenanceLog {

@@ -11,7 +11,8 @@ import {
     BarChart2,
     LogOut,
     Users,
-    Activity
+    Activity,
+    ShieldAlert
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -24,15 +25,16 @@ export default function Sidebar() {
         router.push('/login');
     };
 
-    const navItems = [
-        { name: 'Dashboard', icon: <LayoutDashboard size={20} />, href: '/dashboard' },
-    ];
+    const navItems = user?.role === 'SAFETY_OFFICER'
+        ? []
+        : [{ name: 'Dashboard', icon: <LayoutDashboard size={20} />, href: '/dashboard' }];
 
     if (user?.role === 'ADMIN') {
         navItems.push(
             { name: 'Vehicle Registry', icon: <Truck size={20} />, href: '/dashboard/vehicles' },
             { name: 'Trip Dispatcher', icon: <MapPin size={20} />, href: '/dashboard/dispatch' },
             { name: 'Maintenance', icon: <Wrench size={20} />, href: '/dashboard/maintenance' },
+            { name: 'Safety & Compliance', icon: <ShieldAlert size={20} />, href: '/dashboard/safety' },
             { name: 'Trip & Expense', icon: <DollarSign size={20} />, href: '/dashboard/expense' },
             { name: 'Performance', icon: <BarChart2 size={20} />, href: '/dashboard/performance' },
             { name: 'Analytics', icon: <Activity size={20} />, href: '/dashboard/analytics' },
@@ -42,12 +44,17 @@ export default function Sidebar() {
         // Fleet Manager oversees vehicles and maintenance (Fleet Health & Assets) strictly
         navItems.push(
             { name: 'Vehicle Registry', icon: <Truck size={20} />, href: '/dashboard/vehicles' },
-            { name: 'Maintenance', icon: <Wrench size={20} />, href: '/dashboard/maintenance' }
+            { name: 'Maintenance', icon: <Wrench size={20} />, href: '/dashboard/maintenance' },
+            { name: 'Safety & Compliance', icon: <ShieldAlert size={20} />, href: '/dashboard/safety' }
         );
     } else if (user?.role === 'DISPATCHER') {
         // Dispatcher focuses on Trip Dispatching strictly
         navItems.push(
             { name: 'Trip Dispatcher', icon: <MapPin size={20} />, href: '/dashboard/dispatch' }
+        );
+    } else if (user?.role === 'SAFETY_OFFICER') {
+        navItems.push(
+            { name: 'Safety & Compliance', icon: <ShieldAlert size={20} />, href: '/dashboard/safety' }
         );
     }
 
