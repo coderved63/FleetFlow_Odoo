@@ -52,6 +52,7 @@ export default function MainDashboard() {
         if (token) fetchStats();
     }, [token]);
 
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">
             {/* Top Bar: Search and Filters */}
@@ -120,6 +121,7 @@ export default function MainDashboard() {
                 <div className="p-4 border-b border-neutral-800 bg-neutral-950/50">
                     <h3 className="text-lg font-bold text-white tracking-wide">Recent Trip Activity</h3>
                 </div>
+                <div className="overflow-x-auto">
                 <table className="w-full text-center border-collapse">
                     <thead>
                         <tr className="border-b border-neutral-800 text-sm bg-neutral-950/30">
@@ -166,6 +168,7 @@ export default function MainDashboard() {
                         ))}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     );

@@ -225,23 +225,49 @@ const HeroThreeScene = () => {
 };
 
 // --- COMPONENTS ---
-const Navbar = () => (
-  <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 px-8 h-20 flex items-center justify-between backdrop-blur-xl bg-black/40">
-    <div className="flex items-center gap-3">
-      <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)] relative group cursor-pointer">
-        <Truck className="text-white group-hover:scale-110 transition-transform" size={20} />
-        <div className="absolute inset-0 bg-blue-400 blur-lg opacity-0 group-hover:opacity-40 transition-opacity"></div>
+const Navbar = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  return (
+    <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 px-6 md:px-8 h-20 flex items-center justify-between backdrop-blur-xl bg-black/40">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)] relative group cursor-pointer">
+          <Truck className="text-white group-hover:scale-110 transition-transform" size={20} />
+          <div className="absolute inset-0 bg-blue-400 blur-lg opacity-0 group-hover:opacity-40 transition-opacity"></div>
+        </div>
+        <span className="text-2xl font-black tracking-tighter uppercase italic text-white leading-none">FleetFlow</span>
       </div>
-      <span className="text-2xl font-black tracking-tighter uppercase italic text-white leading-none">FleetFlow</span>
-    </div>
 
-    <div className="flex items-center gap-4">
-      <a href="/login" className="px-8 py-3 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-blue-600 hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-blue-600/40">
-        Command Center
-      </a>
-    </div>
-  </nav>
-);
+      {/* Desktop CTA */}
+      <div className="hidden sm:flex items-center gap-4">
+        <a href="/login" className="px-8 py-3 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-blue-600 hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-blue-600/40">
+          Command Center
+        </a>
+      </div>
+
+      {/* Mobile hamburger */}
+      <button
+        className="sm:hidden p-2 text-white"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      {/* Mobile dropdown */}
+      {mobileMenuOpen && (
+        <div className="sm:hidden absolute top-20 left-0 right-0 bg-black/95 border-b border-white/10 p-6 flex flex-col gap-4">
+          <a
+            href="/login"
+            className="w-full text-center px-8 py-4 bg-white text-black text-[11px] font-black uppercase tracking-widest rounded-full hover:bg-blue-600 hover:text-white transition-all"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Command Center
+          </a>
+        </div>
+      )}
+    </nav>
+  );
+};
 
 const featureData = [
   {
@@ -286,7 +312,7 @@ export default function Home() {
               The Standard of Intelligence
             </div>
 
-            <h1 className="text-7xl md:text-[110px] font-black tracking-tighter leading-[0.85] mb-8 uppercase italic">
+            <h1 className="text-4xl sm:text-6xl md:text-[110px] font-black tracking-tighter leading-[0.9] md:leading-[0.85] mb-8 uppercase italic">
               Next-Gen <br />
               <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-600 bg-clip-text text-transparent">Fleet Intelligence.</span>
             </h1>
@@ -327,8 +353,8 @@ export default function Home() {
       </header>
 
       {/* 3D FEATURE CARDS SECTION */}
-      <section id="features" className="relative py-40 px-8 max-w-7xl mx-auto z-10">
-        <div className="text-center mb-32">
+      <section id="features" className="relative py-20 md:py-40 px-6 md:px-8 max-w-7xl mx-auto z-10">
+        <div className="text-center mb-12 md:mb-32">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -369,7 +395,7 @@ export default function Home() {
       </section>
 
       {/* FINAL CTA SECTION */}
-      <section className="relative px-8 py-40 border-t border-white/5 overflow-hidden">
+      <section className="relative px-6 md:px-8 py-20 md:py-40 border-t border-white/5 overflow-hidden">
         <div className="absolute inset-0 z-0 flex items-center justify-center opacity-10">
           <Truck className="w-[800px] h-[800px] text-blue-900 -rotate-12" />
         </div>
@@ -382,7 +408,7 @@ export default function Home() {
           <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-10 shadow-[0_0_50px_rgba(37,99,235,0.4)]">
             <Layers className="text-white" size={32} />
           </div>
-          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-10 italic">Ready to optimize your global operations?</h2>
+          <h2 className="text-3xl sm:text-5xl md:text-7xl font-black uppercase tracking-tighter mb-10 italic">Ready to optimize your global operations?</h2>
           <motion.a
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

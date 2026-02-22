@@ -28,6 +28,17 @@ export default function LoginPage() {
 
             login(data.token, data.user);
 
+<<<<<<< HEAD
+=======
+            const roleRedirects = {
+                ADMIN:            '/dashboard/admin',
+                SAFETY_OFFICER:   '/dashboard/safety',
+                DISPATCHER:       '/dashboard/dispatch',
+                FLEET_MANAGER:    '/dashboard/vehicles',
+                FINANCIAL_ANALYST:'/dashboard/expense',
+            };
+            router.push(roleRedirects[data.user.role] ?? '/dashboard');
+>>>>>>> ebe73cf122fbf8b6678744ed30bb2f2677c31cfa
             // Conditional Redirection based on Role
             if (data.user.role === 'ADMIN') {
                 router.push('/dashboard/admin');
