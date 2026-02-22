@@ -140,6 +140,7 @@ export default function VehicleRegistryPage() {
 
             {/* Vehicle Table */}
             <div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden mt-8 shadow-sm">
+                <div className="overflow-x-auto">
                 <table className="w-full text-center border-collapse">
                     <thead>
                         <tr className="border-b border-neutral-800 text-sm">
@@ -215,6 +216,7 @@ export default function VehicleRegistryPage() {
                         ))}
                     </tbody>
                 </table>
+                </div>
             </div>
 
             {/* Modal: New Vehicle Registration */}

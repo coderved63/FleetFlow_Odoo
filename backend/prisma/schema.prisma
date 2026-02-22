@@ -15,6 +15,24 @@ enum Role {
   FINANCIAL_ANALYST
 }
 
+enum DriverAvailability {
+  AVAILABLE
+  ON_TRIP
+}
+
+enum DutyStatus {
+  ON_DUTY
+  BREAK
+  SUSPENDED
+}
+
+enum IncidentType {
+  LATE
+  COMPLAINT
+  MINOR
+  MAJOR
+}
+
 enum VehicleType {
   TRUCK
   VAN
@@ -75,21 +93,40 @@ model Vehicle {
 }
 
 model Driver {
-  id            Int       @id @default(autoincrement())
-  name          String
-  licenseExpiry DateTime
-  status        String    @default("On Duty") // On Duty, Off Duty, Suspended
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id              Int       @id @default(autoincrement())
+  name            String
+  licenseExpiry   DateTime
+  status          String    @default("On Duty") // On Duty, Off Duty, Suspended
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  license       License?
-  trips         Trip[]
+  licenseNumber   String?   @unique
+  licenseCategory String?   // TRUCK, VAN, BIKE
+  dutyStatus      DutyStatus @default(ON_DUTY)
+  availability    DriverAvailability @default(AVAILABLE)
+  safetyScore     Int       @default(100)
+  complaints      Int       @default(0)
+
+  license         License?
+  trips           Trip[]
+  incidents       DriverIncident[]
+}
+
+model DriverIncident {
+  id              Int          @id @default(autoincrement())
+  driver          Driver       @relation(fields: [driverId], references: [id])
+  driverId        Int
+  type            IncidentType
+  description     String
+  date            DateTime     @default(now())
+  severityScore   Int          
+  createdAt       DateTime     @default(now())
 }
 
 model Trip {
-  id                      Int          @id @default(autoincrement())
-  tripId                  String       @unique
-  vehicle                 Vehicle      @relation(fields: [vehicleId], references: [id])
+  id                      Int       @id @default(autoincrement())
+  tripId                  String    @unique
+  vehicle                 Vehicle   @relation(fields: [vehicleId], references: [id])
   vehicleId               Int
   driver                  Driver       @relation(fields: [driverId], references: [id])
   driverId                Int

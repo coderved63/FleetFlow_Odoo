@@ -1,8 +1,8 @@
 'use client';
-import { useAuthStore } from '@/store/authStore';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function MainDashboard() {
     const { user, token } = useAuthStore();
@@ -17,11 +17,22 @@ export default function MainDashboard() {
         recentTrips: []
     });
 
+    // Role-based auto-redirect: SAFETY_OFFICER should never land here
     useEffect(() => {
-        if (user?.role === 'FINANCIAL_ANALYST') {
-            router.push('/dashboard/analytics');
+        const roleRedirects = {
+            SAFETY_OFFICER:    '/dashboard/safety',
+            DISPATCHER:        '/dashboard/dispatch',
+            FINANCIAL_ANALYST: '/dashboard/expense',
+        };
+        if (user?.role && roleRedirects[user.role]) {
+            router.replace(roleRedirects[user.role]);
         }
     }, [user, router]);
+
+    // Don't render generic dashboard for redirected roles
+    if (['SAFETY_OFFICER', 'DISPATCHER', 'FINANCIAL_ANALYST'].includes(user?.role)) {
+        return null;
+    }
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -40,6 +51,7 @@ export default function MainDashboard() {
 
         if (token) fetchStats();
     }, [token]);
+
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-neutral-100">
@@ -109,6 +121,7 @@ export default function MainDashboard() {
                 <div className="p-4 border-b border-neutral-800 bg-neutral-950/50">
                     <h3 className="text-lg font-bold text-white tracking-wide">Recent Trip Activity</h3>
                 </div>
+                <div className="overflow-x-auto">
                 <table className="w-full text-center border-collapse">
                     <thead>
                         <tr className="border-b border-neutral-800 text-sm bg-neutral-950/30">
@@ -155,6 +168,7 @@ export default function MainDashboard() {
                         ))}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     );
